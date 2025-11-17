@@ -1,7 +1,6 @@
 # Define the Room class.
 
 class Room:
-
     # Define the constructor. 
     def __init__(self, name, description):
         self.name = name
