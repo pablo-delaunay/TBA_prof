@@ -54,8 +54,22 @@ class Actions:
             return False
 
         # Get the direction from the list of words.
-        direction = list_of_words[1]
-        # Move the player in the direction specified by the parameter.
+        direction = list_of_words[1].upper()
+        synonyms = {
+        "N": "N", "NORD": "N",
+        "E": "E", "EST": "E",
+        "S": "S", "SUD": "S",
+        "O": "O", "OUEST": "O"
+        }
+
+        # Normalize the direction
+        if direction in synonyms:
+            direction = synonyms[direction]
+        else:
+            print("\nDirection inconnue. Utilisez N, E, S, O.\n")
+            return False
+
+        # Move the player
         player.move(direction)
         return True
 

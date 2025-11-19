@@ -25,37 +25,83 @@ class Game:
         self.commands["help"] = help
         quit = Command("quit", " : quitter le jeu", Actions.quit, 0)
         self.commands["quit"] = quit
-        go = Command("go", " <direction> : se déplacer dans une direction cardinale (N, E, S, O)", Actions.go, 1)
+        go = Command("go", " <direction> : se déplacer dans une direction (N, E, S, O, U, D)", Actions.go, 1)
         self.commands["go"] = go
         
         # Setup rooms
 
-        forest = Room("Forest", "dans une forêt enchantée. Vous entendez une brise légère à travers la cime des arbres.")
-        self.rooms.append(forest)
-        tower = Room("Tower", "dans une immense tour en pierre qui s'élève au dessus des nuages.")
-        self.rooms.append(tower)
-        cave = Room("Cave", "dans une grotte profonde et sombre. Des voix semblent provenir des profondeurs.")
-        self.rooms.append(cave)
-        cottage = Room("Cottage", "dans un petit chalet pittoresque avec un toit de chaume. Une épaisse fumée verte sort de la cheminée.")
-        self.rooms.append(cottage)
-        swamp = Room("Swamp", "dans un marécage sombre et ténébreux. L'eau bouillonne, les abords sont vaseux.")
-        self.rooms.append(swamp)
-        castle = Room("Castle", "dans un énorme château fort avec des douves et un pont levis. Sur les tours, des flèches en or massif.")
-        self.rooms.append(castle)
-
+        
+        Esiee = Room("Esiee", "Lisa est dans la rue de l'esiee, au milieu des étudiants ")
+        self.rooms.append(Esiee)
+        Bu = Room("Bu", " Lisa est dans la bibliotèque de l'école et vous apercevez Berko au loin")
+        self.rooms.append(Bu)
+        Rue = Room("Rue", "Vous êtes dans la rue, de l'air frais enfin")
+        self.rooms.append(Rue)
+        Magasin = Room("Magasin", "Lisa est dans un magasin, il y a tout le nécessaire pour une CE (résistances et goûts).")
+        self.rooms.append(Magasin)
+        ChezAmine = Room("Chez Amine", "Lisa est rentré chez Amine")
+        self.rooms.append(ChezAmine)
+        Couloir = Room("Couloir", "Lisa est devant la porte de chez Amine")
+        self.rooms.append(Couloir)
+        Crackheads = Room("Crackheads", "Lisa croise des crackheads et se fait planter (29/09/2005 - 21/01/2026)")
+        self.rooms.append(Crackheads)
+        Ascenseur2 = Room("Ascenseur2", "Lisa est dans l'ascenseur, au deuxième étage du crous Monstesquieu")
+        self.rooms.append(Ascenseur2)
+        Ascenseur1 = Room("Ascenseur1", "Lisa est dans l'ascenseur, au premier étage du crous Monstesquieu")
+        self.rooms.append(Ascenseur1)
+        SaadJunior = Room("SaadJunior", "Lisa croise saad dans la Junior Entreprise il lui tend ses clés")
+        self.rooms.append(SaadJunior)
         # Create exits for rooms
 
-        forest.exits = {"N" : cave, "E" : None, "S" : castle, "O" : None}
-        tower.exits = {"N" : cottage, "E" : None, "S" : swamp, "O" : None}
-        cave.exits = {"N" : None, "E" : cottage, "S" : forest, "O" : None}
-        cottage.exits = {"N" : None, "E" : None, "S" : tower, "O" : cave}
-        swamp.exits = {"N" : tower, "E" : None, "S" : None, "O" : castle}
-        castle.exits = {"N" : forest, "E" : swamp, "S" : None, "O" : None}
+        Esiee.exits = {"N" : SaadJunior, "E" : None, "S" : Rue, "O" : Bu, "U" : None, "D" : None}
+        Bu.exits = {"N" : None, "E" : Esiee, "S" : None, "O" : None,"U" : None, "D" : None}
+        Rue.exits = {"N" : None, "E" : ChezAmine, "S" : Magasin, "O" : Crackheads,"U" : None, "D" : None}
+        Magasin.exits = {"N" : Rue, "E" : None, "S" : None, "O" : None,"U" : None, "D" : None}
+        ChezAmine.exits = {"N" : None, "E" : None, "S" : Couloir, "O" : None,"U" : None, "D" : None}
+        Couloir.exits = {"N" : ChezAmine, "E" : None, "S" : Ascenseur2, "O" : None,"U" : None, "D" : None}
+        Ascenseur1.exits = {"N" : None, "E" : None, "S" : None, "O" : Rue,"U" : Ascenseur2, "D" : None}
+        Ascenseur2.exits = {"N" : Couloir, "E" : None, "S" : None, "O" : None,"U" : None, "D" : Ascenseur1}
+        SaadJunior.exits = {"N" : None, "E" : None, "S" : Esiee, "O" : None,"U" : None, "D" : None}
+
+        Esiee.fail_messages = {
+            "E": "Il y a un mur",
+            "U": "Tu veux t'envoler ? Il y a un plafond", 
+            "D": "Il n'y a pas de tunnel sous terrain désolé",
+        }
+        SaadJunior.fail_messages = {
+            "E": "Il y a un mur", 
+            "O": "Il y a un mur", 
+            "N": "Il y a Yann avec un poème à la main, Lisa fait demi-tour et reste avec Saad.",
+            "U": "Tu veux t'envoler ? Il y a un plafond",
+            "D": "Il n'y a pas de tunnel sous terrain désolé",
+        }
+        Bu.fail_messages = {
+            "U": "Tu veux t'envoler ?", 
+            "D": "Il n'y a pas de tunnel sous terrain désolé", 
+        }
+        Magasin.fail_messages = {
+            "U": "Tu veux t'envoler ?", 
+            "D": "Il n'y a pas de tunnel sous terrain désolé", 
+        }
+        Rue.fail_messages = {
+            "U": "Tu veux t'envoler ?", 
+            "D": "Il n'y a pas de tunnel sous terrain désolé",
+            "N": "Tu n'as pas ta carte étudiante donc ne peut plus rentrer" 
+        }
+        Couloir.fail_messages = {
+            "U": "Tu veux t'envoler ? Il y a un plafond", 
+            "D": "Il n'y a pas de tunnel sous terrain désolé", 
+        }
+        ChezAmine.fail_messages = {
+            "U": "Tu veux t'envoler ? Il y a un plafond", 
+            "D": "Il n'y a pas de tunnel sous terrain désolé", 
+        }
+
 
         # Setup player and starting room
 
         self.player = Player(input("\nEntrez votre nom: "))
-        self.player.current_room = swamp
+        self.player.current_room = Esiee
 
     # Play the game
     def play(self):
@@ -85,10 +131,11 @@ class Game:
 
     # Print the welcome message
     def print_welcome(self):
-        print(f"\nBienvenue {self.player.name} dans ce jeu d'aventure !")
-        print("Entrez 'help' si vous avez besoin d'aide.")
+        print(f"\n Bienvenue {self.player.name}, vous incarnez Lisa une jeune étudiante de l'Esiee à la recherche d'une CE. Elle est en total manque de nicotines, vous devez absolument l'aider à en trouver une. Bon courage, kiffez, croquez la vie à pleine dents, fumez avant que la vie vous fume. \n")
+        print("Entrez 'help' si vous avez besoin d'aide. \n")
         #
         print(self.player.current_room.get_long_description())
+
     
 
 def main():

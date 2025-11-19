@@ -11,10 +11,17 @@ class Player():
         # Get the next room from the exits dictionary of the current room.
         next_room = self.current_room.exits[direction]
 
-        # If the next room is None, print an error message and return False.
         if next_room is None:
-            print("\nAucune porte dans cette direction !\n")
+
+            # Vérifie s'il existe un message personnalisé dans la room
+            if direction in self.current_room.fail_messages:
+                print("\n" + self.current_room.fail_messages[direction] + "\n")
+            else:
+                # message standard si aucun message personnalisé n'existe
+                print("\nImpossible d'aller dans cette direction.\n")
+
             return False
+
         
         # Set the current room to the next room.
         self.current_room = next_room
