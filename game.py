@@ -27,7 +27,8 @@ class Game:
         self.commands["quit"] = quit
         go = Command("go", " <direction> : se déplacer dans une direction (N, E, S, O, U, D)", Actions.go, 1)
         self.commands["go"] = go
-        
+        back_cmd = Command("back", " : revenir à la pièce précédente", Actions.back, 0)
+        self.commands["back"] = back_cmd
         # Setup rooms
 
         
@@ -35,7 +36,7 @@ class Game:
         self.rooms.append(Esiee)
         Bu = Room("Bu", " Lisa est dans la bibliotèque de l'école et vous apercevez Berko au loin")
         self.rooms.append(Bu)
-        Rue = Room("Rue", "Vous êtes dans la rue, de l'air frais enfin")
+        Rue = Room("Rue", "Lisa est dans la rue, de l'air frais enfin")
         self.rooms.append(Rue)
         Magasin = Room("Magasin", "Lisa est dans un magasin, il y a tout le nécessaire pour une CE (résistances et goûts).")
         self.rooms.append(Magasin)
@@ -47,7 +48,7 @@ class Game:
         self.rooms.append(Crackheads)
         Ascenseur2 = Room("Ascenseur2", "Lisa est dans l'ascenseur, au deuxième étage du crous Monstesquieu")
         self.rooms.append(Ascenseur2)
-        Ascenseur1 = Room("Ascenseur1", "Lisa est dans l'ascenseur, au premier étage du crous Monstesquieu")
+        Ascenseur1 = Room("Ascenseur1", "Lisa est dans l'ascenseur, au premier étage du crous Monstesquieu (Amine vie ici)")
         self.rooms.append(Ascenseur1)
         SaadJunior = Room("SaadJunior", "Lisa croise saad dans la Junior Entreprise il lui tend ses clés")
         self.rooms.append(SaadJunior)
@@ -55,7 +56,7 @@ class Game:
 
         Esiee.exits = {"N" : SaadJunior, "E" : None, "S" : Rue, "O" : Bu, "U" : None, "D" : None}
         Bu.exits = {"N" : None, "E" : Esiee, "S" : None, "O" : None,"U" : None, "D" : None}
-        Rue.exits = {"N" : None, "E" : ChezAmine, "S" : Magasin, "O" : Crackheads,"U" : None, "D" : None}
+        Rue.exits = {"N" : None, "E" : Ascenseur1, "S" : Magasin, "O" : Crackheads,"U" : None, "D" : None}
         Magasin.exits = {"N" : Rue, "E" : None, "S" : None, "O" : None,"U" : None, "D" : None}
         ChezAmine.exits = {"N" : None, "E" : None, "S" : Couloir, "O" : None,"U" : None, "D" : None}
         Couloir.exits = {"N" : ChezAmine, "E" : None, "S" : Ascenseur2, "O" : None,"U" : None, "D" : None}
@@ -102,6 +103,8 @@ class Game:
 
         self.player = Player(input("\nEntrez votre nom: "))
         self.player.current_room = Esiee
+        self.player.history.append(self.player.current_room)
+
 
     # Play the game
     def play(self):
@@ -136,7 +139,22 @@ class Game:
         #
         print(self.player.current_room.get_long_description())
 
-    
+    def back(game, list_of_words, number_of_parameters):
+        if len(game.player.history) <= 1:
+            print("\nVous ne pouvez pas revenir en arrière.\n")
+            return
+
+        # Supprime la salle actuelle de l'historique
+        game.player.history.pop()
+
+        # Revenir à la salle précédente
+        game.player.current_room = game.player.history[-1]
+
+        # Afficher la description et l'historique
+        print(game.player.current_room.get_long_description())
+        hist = game.player.get_history()
+        if hist != "":
+            print(hist)
 
 def main():
     # Create a game object and play the game

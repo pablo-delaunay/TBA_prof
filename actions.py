@@ -59,16 +59,18 @@ class Actions:
         "N": "N", "NORD": "N",
         "E": "E", "EST": "E",
         "S": "S", "SUD": "S",
-        "O": "O", "OUEST": "O"
+        "O": "O", "OUEST": "O",
+        "U": "U", "UP": "U",
+        "D": "D", "DOWN": "D"
         }
 
         # Normalize the direction
         if direction in synonyms:
             direction = synonyms[direction]
         else:
-            print("\nDirection inconnue. Utilisez N, E, S, O.\n")
+            print("\nDirection inconnue. Utilisez N, E, S, O, U, D, back.\n")
             return False
-
+        
         # Move the player
         player.move(direction)
         return True
@@ -111,6 +113,24 @@ class Actions:
         print(msg)
         game.finished = True
         return True
+    
+    def back(game, list_of_words, number_of_parameters):
+        player = game.player
+        if len(player.history) <= 1:
+            print("\nVous ne pouvez pas revenir en arrière.\n")
+            return
+
+        # Supprime la salle actuelle de l'historique
+        player.history.pop()
+
+        # Revenir à la salle précédente
+        player.current_room = player.history[-1]
+
+        # Afficher la description et l'historique
+        print(player.current_room.get_long_description())
+        hist = player.get_history()
+        if hist != "":
+            print(hist)
 
     def help(game, list_of_words, number_of_parameters):
         """
@@ -137,7 +157,7 @@ class Actions:
         False
 
         """
-
+    
         # If the number of parameters is incorrect, print an error message and return False.
         l = len(list_of_words)
         if l != number_of_parameters + 1:
