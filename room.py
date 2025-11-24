@@ -7,7 +7,25 @@ class Room:
         self.description = description
         self.exits = {}
         self.fail_messages = {}
-    
+        self.inventory = []
+        
+    def get_exit(self, direction):
+        return self.exits.get(direction, None)
+
+    def get_exit_string(self):
+        exit_string = "Sorties: "
+        for exit in self.exits.keys():
+            if self.exits.get(exit) is not None:
+                exit_string += exit + ", "
+                exit_string = exit_string.strip(", ")
+        return exit_string
+
+    def get_long_description(self):
+        return f"\nVous êtes dans {self.description}\n\n{self.get_exit_string()}\n"
+
+    def get_inventory(self):
+        return self.inventory.get_inventory(prefix_message="La pièce contient :")
+        
     # Define the get_exit method.
     def get_exit(self, direction):
 

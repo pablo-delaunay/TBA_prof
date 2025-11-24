@@ -68,7 +68,7 @@ class Actions:
         if direction in synonyms:
             direction = synonyms[direction]
         else:
-            print("\nDirection inconnue. Utilisez N, E, S, O, U, D, back.\n")
+            print("\nDirection inconnue. Utilisez N, E, S, O, U, D.\n")
             return False
         
         # Move the player
@@ -171,3 +171,11 @@ class Actions:
             print("\t- " + str(command))
         print()
         return True
+
+    def look(game, list_of_words, number_of_parameters):
+        room = game.player.current_room
+        # Affiche la description longue de la salle
+        print(room.get_long_description())
+        # Affiche les items présents dans la salle
+        print(room.get_inventory())
+

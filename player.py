@@ -1,11 +1,25 @@
 # Define the Player class.
 class Player():
+    from item import Inventory
 
     # Define the constructor.
     def __init__(self, name):
         self.name = name
         self.current_room = None
         self.history = []
+        self.inventory = []
+
+    def move(self, direction):
+        next_room = self.current_room.exits.get(direction)
+        if next_room is None:
+            print("\nAucune porte dans cette direction !\n")
+            return False
+            self.current_room = next_room
+            print(self.current_room.get_long_description())
+        return True
+
+    def get_inventory(self):
+        return self.inventory.get_inventory(prefix_message="Vous disposez des items suivants :")
     
     # Define the move method.
     def move(self, direction):
@@ -42,4 +56,10 @@ class Player():
             text += f"    - {room.description}\n"
         return text
 
-    
+    def get_inventory(self):
+        if not self.inventory:
+            return "Vous ne disposez d'aucun item."
+            inv = "Vous disposez des items suivants :\n"
+            for item in self.inventory:
+                inv += f" - {item}\n"
+            return inv

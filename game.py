@@ -6,6 +6,8 @@ from room import Room
 from player import Player
 from command import Command
 from actions import Actions
+from item import Item
+from item import Inventory
 
 class Game:
 
@@ -29,6 +31,8 @@ class Game:
         self.commands["go"] = go
         back_cmd = Command("back", " : revenir à la pièce précédente", Actions.back, 0)
         self.commands["back"] = back_cmd
+        look_command = Command("look", " : observer la pièce et voir les objets présents", Actions.look, 0)
+        self.commands["look"] = look_command
         # Setup rooms
 
         
@@ -53,6 +57,7 @@ class Game:
         SaadJunior = Room("SaadJunior", "Lisa croise saad dans la Junior Entreprise il lui tend ses clés")
         self.rooms.append(SaadJunior)
         # Create exits for rooms
+
 
         Esiee.exits = {"N" : SaadJunior, "E" : None, "S" : Rue, "O" : Bu, "U" : None, "D" : None}
         Bu.exits = {"N" : None, "E" : Esiee, "S" : None, "O" : None,"U" : None, "D" : None}
@@ -97,6 +102,12 @@ class Game:
             "U": "Tu veux t'envoler ? Il y a un plafond", 
             "D": "Il n'y a pas de tunnel sous terrain désolé", 
         }
+
+
+        clés = Item("clés", "Lisa peut mainteant aller chez Amine",1)
+
+        # Ajouter les items à certaines salles
+        SaadJunior.inventory.append(clés)
 
 
         # Setup player and starting room
