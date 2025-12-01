@@ -4,7 +4,7 @@ class Item:
         self.description = description
         self.weight = weight
 
-    def _str_(self):
+    def __str__(self):
         return f"{self.name} : {self.description} ({self.weight} kg)"
 
 class Inventory:
@@ -24,7 +24,7 @@ class Inventory:
     def get_inventory(self, prefix_message="Vous disposez des items suivants :"):
         if not self.items:
             return "Il n'y a rien ici." if prefix_message.startswith('La pièce') else "Vous ne disposez d'aucun item."
-            inv = f"{prefix_message}\n"
-            for item in self.items:
-                inv += f" - {item}\n"
+        inv = f"{prefix_message}\n"
+        for item in self.items:
+            inv += f" - {item}\n"
         return inv

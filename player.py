@@ -1,30 +1,24 @@
 # Define the Player class.
+from item import Inventory
+
 class Player():
-    from item import Inventory
 
     # Define the constructor.
     def __init__(self, name):
         self.name = name
         self.current_room = None
         self.history = []
-        self.inventory = []
+        self.inventory = Inventory()
+        self.max_weight = 10
 
-    def move(self, direction):
-        next_room = self.current_room.exits.get(direction)
-        if next_room is None:
-            print("\nAucune porte dans cette direction !\n")
-            return False
-            self.current_room = next_room
-            print(self.current_room.get_long_description())
-        return True
+    def get_total_weight(self):
+        return sum(item.weight for item in self.inventory.items)
 
-    def get_inventory(self):
-        return self.inventory.get_inventory(prefix_message="Vous disposez des items suivants :")
-    
-    # Define the move method.
+        
+            # Define the move method.
     def move(self, direction):
         # Get the next room from the exits dictionary of the current room.
-        next_room = self.current_room.exits[direction]
+        next_room = self.current_room.exits.get(direction)
 
         if next_room is None:
 
@@ -42,6 +36,7 @@ class Player():
         self.current_room = next_room
         self.history.append(self.current_room)
         print(self.current_room.get_long_description())
+
         hist = self.get_history()
         if hist != "":
             print(hist)

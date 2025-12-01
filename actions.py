@@ -179,3 +179,83 @@ class Actions:
         # Affiche les items présents dans la salle
         print(room.get_inventory())
 
+
+    
+    def take(game, list_of_words, number_of_parameters):
+
+        if len(list_of_words) != 2:
+            command_word = list_of_words[0]
+            print(MSG1.format(command_word=command_word))
+            return False
+
+        item_name = list_of_words[1].lower()
+        player = game.player
+        room = player.current_room
+
+        # Chercher l’objet dans la pièce
+        found = None
+        for item in room.inventory.items:
+            if item.name.lower() == item_name:
+                found = item
+                break
+
+        if found is None:
+            print(f"\nL'objet '{item_name}' n'est pas présent dans cette pièce.\n")
+            return False
+
+        # 💥 Vérifier le poids total après ajout
+        if player.get_total_weight() + found.weight > player.max_weight:
+            print(
+                f"\nVous ne pouvez pas prendre '{found.name}'. "
+                f"Poids total trop élevé ! (max {player.max_weight} kg)\n"
+            )
+            return False
+
+        # Déplacer l’objet
+        room.inventory.remove_item(item_name)
+        player.inventory.add_item(found)
+
+        print(f"\nVous avez pris l'objet '{found.name}'.\n")
+        return True
+
+
+    
+    def drop(game, list_of_words, number_of_parameters):
+
+        # Vérifier le paramètre manquant
+        if len(list_of_words) != 2:
+            print("\nVous devez préciser quel objet déposer.\n")
+            return
+
+        item_name = list_of_words[1].lower()
+        player = game.player
+
+        # Vérifier si l'objet est dans l'inventaire du joueur
+        item = player.inventory.remove_item(item_name)
+
+        if item is None:
+            print(f"\nVous ne possédez pas l'objet '{item_name}'.\n")
+            return
+
+        # Ajouter l'objet dans la pièce actuelle
+        room = player.current_room
+        room.inventory.add_item(item)
+
+        print(f"\nVous avez déposé l'objet '{item.name}'.\n")
+
+    
+    def check(game, list_of_words, number_of_parameters):
+
+        # Vérifier le nombre de paramètres
+        if len(list_of_words) != 1:
+            command_word = list_of_words[0]
+            print(MSG0.format(command_word=command_word))
+            return False
+
+        # Récupérer l’inventaire du joueur
+        inv = game.player.inventory.get_inventory()
+
+        # Affichage
+        print("\n" + inv + "\n")
+
+        return True

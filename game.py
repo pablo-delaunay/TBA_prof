@@ -33,6 +33,12 @@ class Game:
         self.commands["back"] = back_cmd
         look_command = Command("look", " : observer la pièce et voir les objets présents", Actions.look, 0)
         self.commands["look"] = look_command
+        take_cmd = Command("take", " <item> : prendre un objet", Actions.take, 1)
+        self.commands["take"] = take_cmd
+        drop_cmd = Command("drop", " <item> : déposer un objet", Actions.drop, 1)
+        self.commands["drop"] = drop_cmd
+        check_cmd = Command("check", " : afficher l'inventaire", Actions.check, 0)
+        self.commands["check"] = check_cmd
         # Setup rooms
 
         
@@ -104,10 +110,12 @@ class Game:
         }
 
 
-        clés = Item("clés", "Lisa peut mainteant aller chez Amine",1)
+        clés = Item("clés", "celles de chez Amine",0.001)
+        SaadJunior.items = ["clés"]
+
 
         # Ajouter les items à certaines salles
-        SaadJunior.inventory.append(clés)
+        SaadJunior.inventory.add_item(clés)
 
 
         # Setup player and starting room

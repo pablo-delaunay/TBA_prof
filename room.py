@@ -1,4 +1,5 @@
 # Define the Room class.
+from item import Inventory
 
 class Room:
     # Define the constructor. 
@@ -7,7 +8,8 @@ class Room:
         self.description = description
         self.exits = {}
         self.fail_messages = {}
-        self.inventory = []
+        self.inventory = Inventory()
+        self.items = []
         
     def get_exit(self, direction):
         return self.exits.get(direction, None)
