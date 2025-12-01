@@ -8,6 +8,7 @@ from command import Command
 from actions import Actions
 from item import Item
 from item import Inventory
+from room import Door
 
 class Game:
 
@@ -39,6 +40,8 @@ class Game:
         self.commands["drop"] = drop_cmd
         check_cmd = Command("check", " : afficher l'inventaire", Actions.check, 0)
         self.commands["check"] = check_cmd
+        unlock_command = Command("unlock", " <direction> : déverrouiller une porte avec la clé correspondante", Actions.unlock, 1)
+        self.commands["unlock"] = unlock_command
         # Setup rooms
 
         
@@ -65,15 +68,17 @@ class Game:
         # Create exits for rooms
 
 
+
         Esiee.exits = {"N" : SaadJunior, "E" : None, "S" : Rue, "O" : Bu, "U" : None, "D" : None}
         Bu.exits = {"N" : None, "E" : Esiee, "S" : None, "O" : None,"U" : None, "D" : None}
         Rue.exits = {"N" : None, "E" : Ascenseur1, "S" : Magasin, "O" : Crackheads,"U" : None, "D" : None}
         Magasin.exits = {"N" : Rue, "E" : None, "S" : None, "O" : None,"U" : None, "D" : None}
         ChezAmine.exits = {"N" : None, "E" : None, "S" : Couloir, "O" : None,"U" : None, "D" : None}
-        Couloir.exits = {"N" : ChezAmine, "E" : None, "S" : Ascenseur2, "O" : None,"U" : None, "D" : None}
+        Couloir.exits = {"N" :  (ChezAmine, Door(locked=True, key_name="clé")), "E" : None, "S" : Ascenseur2, "O" : None,"U" : None, "D" : None}
         Ascenseur1.exits = {"N" : None, "E" : None, "S" : None, "O" : Rue,"U" : Ascenseur2, "D" : None}
         Ascenseur2.exits = {"N" : Couloir, "E" : None, "S" : None, "O" : None,"U" : None, "D" : Ascenseur1}
         SaadJunior.exits = {"N" : None, "E" : None, "S" : Esiee, "O" : None,"U" : None, "D" : None}
+
 
         Esiee.fail_messages = {
             "E": "Il y a un mur",
@@ -112,6 +117,11 @@ class Game:
 
         clés = Item("clés", "celles de chez Amine",0.001)
         SaadJunior.items = ["clés"]
+
+        # Porte verrouillée pour entrer chez Amine
+        porte_chez_amine = Door(locked=True, key_name="clés")
+        # On remplace l'exit normale par un tuple (room, door)
+        Couloir.exits["N"] = (ChezAmine, porte_chez_amine)
 
 
         # Ajouter les items à certaines salles

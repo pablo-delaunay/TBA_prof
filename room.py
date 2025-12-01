@@ -29,13 +29,13 @@ class Room:
         return self.inventory.get_inventory(prefix_message="La pièce contient :")
         
     # Define the get_exit method.
+    
     def get_exit(self, direction):
+        if direction in self.exits:
+            return self.exits[direction]  # (room, door) ou juste room
+        return None
 
-        # Return the room in the given direction if it exists.
-        if direction in self.exits.keys():
-            return self.exits[direction]
-        else:
-            return None
+
     
     # Return a string describing the room's exits.
     def get_exit_string(self):
@@ -49,3 +49,8 @@ class Room:
     # Return a long description of this room including exits.
     def get_long_description(self):
         return f"\n {self.description}\n\n{self.get_exit_string()}\n"
+
+class Door:
+    def __init__(self, locked=True, key_name=None):
+        self.locked = locked
+        self.key_name = key_name  # nom de l'objet clé nécessaire

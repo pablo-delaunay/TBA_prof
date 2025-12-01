@@ -19,60 +19,58 @@ MSG1 = "\nLa commande '{command_word}' prend 1 seul paramètre.\n"
 class Actions:
 
     def go(game, list_of_words, number_of_parameters):
-        """
-        Move the player in the direction specified by the parameter.
-        The parameter must be a cardinal direction (N, E, S, O).
-
-        Args:
-            game (Game): The game object.
-            list_of_words (list): The list of words in the command.
-            number_of_parameters (int): The number of parameters expected by the command.
-
-        Returns:
-            bool: True if the command was executed successfully, False otherwise.
-
-        Examples:
-        
-        >>> from game import Game
-        >>> game = Game()
-        >>> game.setup()
-        >>> go(game, ["go", "N"], 1)
-        True
-        >>> go(game, ["go", "N", "E"], 1)
-        False
-        >>> go(game, ["go"], 1)
-        False
-
-        """
-        
         player = game.player
-        l = len(list_of_words)
-        # If the number of parameters is incorrect, print an error message and return False.
-        if l != number_of_parameters + 1:
+
+        # Vérifie le nombre de paramètres
+        if len(list_of_words) != number_of_parameters + 1:
             command_word = list_of_words[0]
             print(MSG1.format(command_word=command_word))
             return False
 
-        # Get the direction from the list of words.
         direction = list_of_words[1].upper()
         synonyms = {
-        "N": "N", "NORD": "N",
-        "E": "E", "EST": "E",
-        "S": "S", "SUD": "S",
-        "O": "O", "OUEST": "O",
-        "U": "U", "UP": "U",
-        "D": "D", "DOWN": "D"
+            "N": "N", "NORD": "N",
+            "E": "E", "EST": "E",
+            "S": "S", "SUD": "S",
+            "O": "O", "OUEST": "O",
+            "U": "U", "UP": "U",
+            "D": "D", "DOWN": "D"
         }
 
-        # Normalize the direction
         if direction in synonyms:
             direction = synonyms[direction]
         else:
             print("\nDirection inconnue. Utilisez N, E, S, O, U, D.\n")
             return False
-        
-        # Move the player
-        player.move(direction)
+
+        # 💡 Ici on récupère correctement la room actuelle
+        room = player.current_room
+
+        # Récupère la sortie
+        exit_info = room.get_exit(direction)
+
+        if exit_info is None:
+            print("\nImpossible d'aller dans cette direction.\n")
+            return False
+
+        # Si la sortie est une porte
+        if isinstance(exit_info, tuple):
+            next_room, door = exit_info
+            if door.locked:
+                print("\nLa porte est verrouillée.\n")
+                return False
+        else:
+            next_room = exit_info
+
+        # Déplacement du joueur
+        player.current_room = next_room
+        player.history.append(next_room)
+
+        print(next_room.get_long_description())
+        hist = player.get_history()
+        if hist != "":
+            print(hist)
+
         return True
 
     def quit(game, list_of_words, number_of_parameters):
@@ -203,7 +201,7 @@ class Actions:
             print(f"\nL'objet '{item_name}' n'est pas présent dans cette pièce.\n")
             return False
 
-        # 💥 Vérifier le poids total après ajout
+        # Vérifier le poids total après ajout
         if player.get_total_weight() + found.weight > player.max_weight:
             print(
                 f"\nVous ne pouvez pas prendre '{found.name}'. "
@@ -259,3 +257,33 @@ class Actions:
         print("\n" + inv + "\n")
 
         return True
+
+    def unlock(game, list_of_words, number_of_parameters):
+
+        if len(list_of_words) != 2:
+            print("Utilisation : unlock <direction>")
+            return
+
+        direction = list_of_words[1]
+        room = game.player.current_room
+
+        exit_info = room.get_exit(direction)
+
+        if exit_info is None or not isinstance(exit_info, tuple):
+            print("Il n'y a pas de porte dans cette direction.")
+            return
+
+        next_room, door = exit_info
+
+        if not door.locked:
+            print("La porte est déjà ouverte.")
+            return
+
+        # Vérifier que le joueur possède l'objet clé correspondant
+        if not game.player.inventory.has_item(door.key_name):
+            print(f"Vous n'avez pas la clé '{door.key_name}'.")
+            return
+
+        # Déverrouillage
+        door.locked = False
+        print(f"Vous avez déverrouillé la porte vers {direction}.")
