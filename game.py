@@ -9,6 +9,7 @@ from actions import Actions
 from item import Item
 from item import Inventory
 from room import Door
+from character import Character
 
 class Game:
 
@@ -42,6 +43,10 @@ class Game:
         self.commands["check"] = check_cmd
         unlock_command = Command("unlock", " <direction> : déverrouiller une porte avec la clé correspondante", Actions.unlock, 1)
         self.commands["unlock"] = unlock_command
+        talk_cmd = Command("talk", " <someone> : parler à un personnage", Actions.talk, 1)
+        self.commands["talk"] = talk_cmd
+
+
         # Setup rooms
 
         
@@ -67,6 +72,15 @@ class Game:
         self.rooms.append(SaadJunior)
         # Create exits for rooms
 
+        Saad = Character("Saad", "un ami", SaadJunior, ["slt lisa c'est saad"])
+        Amine = Character("Amine", "un ami", ChezAmine, ["slt lisa c'est amine"])
+        Berko = Character("Berko", "un ami", Bu, ["slt lisa c'est berko"])
+        
+        SaadJunior.characters["Saad"] = Saad
+        ChezAmine.characters["Amine"] = Amine
+        Bu.characters["Berko"] = Berko
+
+        
 
 
         Esiee.exits = {"N" : SaadJunior, "E" : None, "S" : Rue, "O" : Bu, "U" : None, "D" : None}

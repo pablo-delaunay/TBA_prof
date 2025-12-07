@@ -287,3 +287,26 @@ class Actions:
         # Déverrouillage
         door.locked = False
         print(f"Vous avez déverrouillé la porte vers {direction}.")
+
+    def talk(game, list_of_words, number_of_parameters):
+        # Vérifie le nombre de paramètres
+        if len(list_of_words) != number_of_parameters + 1:
+            command_word = list_of_words[0]
+            print(f"\nLa commande '{command_word}' prend 1 seul paramètre.\n")
+            return False
+
+        character_name = list_of_words[1].lower()  # en minuscules
+        room = game.player.current_room
+
+        # Crée un dictionnaire avec les clés en minuscules
+        characters_lower = {name.lower(): char for name, char in room.characters.items()}
+
+        # Vérifie si le PNJ est dans la salle actuelle
+        character = characters_lower.get(character_name)
+        if character is None:
+            print(f"\nIl n'y a pas de personnage nommé '{list_of_words[1]}' ici.\n")
+            return False
+
+        # Fait parler le PNJ
+        character.get_msg()
+        return True

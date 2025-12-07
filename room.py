@@ -10,6 +10,7 @@ class Room:
         self.fail_messages = {}
         self.inventory = Inventory()
         self.items = []
+        self.characters = {}
         
     def get_exit(self, direction):
         return self.exits.get(direction, None)
@@ -26,7 +27,16 @@ class Room:
         return f"\nVous êtes dans {self.description}\n\n{self.get_exit_string()}\n"
 
     def get_inventory(self):
-        return self.inventory.get_inventory(prefix_message="La pièce contient :")
+        inv_text = self.inventory.get_inventory(prefix_message="La pièce contient :")
+        
+        # Ajouter les personnages présents
+        if self.characters:
+            inv_text += "\nPersonnages présents :\n"
+            for char in self.characters.values():
+                inv_text += f" - {char}\n"
+        
+        return inv_text
+
         
     # Define the get_exit method.
     
