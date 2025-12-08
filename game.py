@@ -72,13 +72,21 @@ class Game:
         self.rooms.append(SaadJunior)
         # Create exits for rooms
 
+        self.characters = []
         Saad = Character("Saad", "un ami", SaadJunior, ["slt lisa c'est saad"])
         Amine = Character("Amine", "un ami", ChezAmine, ["slt lisa c'est amine"])
         Berko = Character("Berko", "un ami", Bu, ["slt lisa c'est berko"])
+
+        self.characters.extend([Saad, Amine, Berko])
         
-        SaadJunior.characters["Saad"] = Saad
-        ChezAmine.characters["Amine"] = Amine
-        Bu.characters["Berko"] = Berko
+        SaadJunior.characters.append(Saad)
+        ChezAmine.characters.append(Amine)
+        Bu.characters.append(Berko)
+
+       
+
+
+    
 
         
 
@@ -153,11 +161,26 @@ class Game:
     def play(self):
         self.setup()
         self.print_welcome()
-        # Loop until the game is finished
+
         while not self.finished:
-            # Get the command from the player
+
+            # PNJ se déplacent avant le tour
+            moved_chars = []
+            for char in self.characters:
+                moved = char.move()
+                if moved:
+                    moved_chars.append(char)
+
+            # Tour du joueur
             self.process_command(input("> "))
-        return None
+
+            # Vérifier si un PNJ s'est déplacé depuis cette salle
+            for char in self.player.current_room.characters[:]:  # copier la liste pour éviter les problèmes
+                moved = char.move(player_room=self.player.current_room)
+                if moved:
+                    print(f"{char.name} s'est déplacé.")
+
+
 
     # Process the command entered by the player
     def process_command(self, command_string) -> None:

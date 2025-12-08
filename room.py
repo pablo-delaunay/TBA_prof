@@ -10,7 +10,8 @@ class Room:
         self.fail_messages = {}
         self.inventory = Inventory()
         self.items = []
-        self.characters = {}
+        self.characters = []
+
         
     def get_exit(self, direction):
         return self.exits.get(direction, None)
@@ -32,7 +33,7 @@ class Room:
         # Ajouter les personnages présents
         if self.characters:
             inv_text += "\nPersonnages présents :\n"
-            for char in self.characters.values():
+            for char in self.characters:
                 inv_text += f" - {char}\n"
         
         return inv_text
