@@ -163,22 +163,8 @@ class Game:
         self.print_welcome()
 
         while not self.finished:
-
-            # PNJ se déplacent avant le tour
-            moved_chars = []
-            for char in self.characters:
-                moved = char.move()
-                if moved:
-                    moved_chars.append(char)
-
-            # Tour du joueur
             self.process_command(input("> "))
 
-            # Vérifier si un PNJ s'est déplacé depuis cette salle
-            for char in self.player.current_room.characters[:]:  # copier la liste pour éviter les problèmes
-                moved = char.move(player_room=self.player.current_room)
-                if moved:
-                    print(f"{char.name} s'est déplacé.")
 
 
 

@@ -29,22 +29,28 @@ class Character:
 
     import random
 
+    import random
+
     def move(self):
-        # 1 chance sur 2 de se déplacer
+        # 50% de chance de ne pas bouger
         if random.random() < 0.5:
-            return False
+            return False, self.current_room  # retourne False et la salle actuelle
 
-        # Récupérer les pièces adjacentes
-        exits = [e for e in self.current_room.exits.values() if e is not None]
+        # Lister les sorties valides
+        exits = [room for room in self.current_room.exits.values() if room is not None]
         if not exits:
-            return False
+            return False, self.current_room
 
+        old_room = self.current_room
         new_room = random.choice(exits)
 
-        # Mettre à jour la présence dans les rooms
-        if self in self.current_room.characters:
-            self.current_room.characters.remove(self)
+        # Mettre à jour les rooms
+        if self in old_room.characters:
+            old_room.characters.remove(self)
         new_room.characters.append(self)
-
         self.current_room = new_room
-        return True
+
+        return True, old_room
+
+
+

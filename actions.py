@@ -71,6 +71,11 @@ class Actions:
         if hist != "":
             print(hist)
 
+        for char in game.characters:
+            moved, old_room = char.move()
+            if moved and old_room == player.current_room:
+                print(f"{char.name} s'est déplacé.")
+
         return True
 
     def quit(game, list_of_words, number_of_parameters):

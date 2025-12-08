@@ -30,13 +30,16 @@ class Room:
     def get_inventory(self):
         inv_text = self.inventory.get_inventory(prefix_message="La pièce contient :")
         
-        # Ajouter les personnages présents
         if self.characters:
             inv_text += "\nPersonnages présents :\n"
             for char in self.characters:
-                inv_text += f" - {char}\n"
+                inv_text += f" - {char.name}\n"
+        else:
+            inv_text += "\nPersonne n'est ici.\n"
         
         return inv_text
+
+
 
         
     # Define the get_exit method.

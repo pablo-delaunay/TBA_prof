@@ -18,12 +18,15 @@ class Inventory:
         for item in self.items:
             if item.name == item_name:
                 self.items.remove(item)
-            return item
+                return item
         return None
 
     def get_inventory(self, prefix_message="Vous disposez des items suivants :"):
         if not self.items:
-            return "Il n'y a rien ici." if prefix_message.startswith('La pièce') else "Vous ne disposez d'aucun item."
+            if prefix_message.startswith('La pièce'):
+                return "Il n'y a rien ici."
+            return "Vous ne disposez d'aucun item."
+
         inv = f"{prefix_message}\n"
         for item in self.items:
             inv += f" - {item}\n"
