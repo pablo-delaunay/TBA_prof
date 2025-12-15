@@ -32,25 +32,40 @@ class Character:
     import random
 
     def move(self):
-        # 50% de chance de ne pas bouger
-        if random.random() < 0.5:
-            return False, self.current_room  # retourne False et la salle actuelle
 
-        # Lister les sorties valides
-        exits = [room for room in self.current_room.exits.values() if room is not None]
+    # 50% de chance de ne pas bouger
+        if random.random() < 0.5:
+            return False, self.current_room
+
+        exits = []
+
+        for exit_info in self.current_room.exits.values():
+            if exit_info is None:
+                continue
+
+            # Si c'est une porte : (room, door)
+            if isinstance(exit_info, tuple):
+                room, door = exit_info
+                if not door.locked:  # le personnage ne traverse que si ouvert
+                    exits.append(room)
+            else:
+                exits.append(exit_info)
+
         if not exits:
             return False, self.current_room
 
         old_room = self.current_room
         new_room = random.choice(exits)
 
-        # Mettre à jour les rooms
+        # Mise à jour des salles
         if self in old_room.characters:
             old_room.characters.remove(self)
+
         new_room.characters.append(self)
         self.current_room = new_room
 
         return True, old_room
+
 
 
 

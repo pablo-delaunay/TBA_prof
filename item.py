@@ -20,6 +20,13 @@ class Inventory:
                 self.items.remove(item)
                 return item
         return None
+    
+    def has_item(self, item_name):
+        """Retourne True si l'inventaire contient un item avec ce nom"""
+        for item in self.items:
+            if item.name.lower() == item_name.lower():
+                return True
+        return False
 
     def get_inventory(self, prefix_message="Vous disposez des items suivants :"):
         if not self.items:

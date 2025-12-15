@@ -53,12 +53,24 @@ class Actions:
             print("\nImpossible d'aller dans cette direction.\n")
             return False
 
-        # Si la sortie est une porte
         if isinstance(exit_info, tuple):
             next_room, door = exit_info
-            if door.locked:
-                print("\nLa porte est verrouillée.\n")
-                return False
+
+            # 🔥 Condition EXCLUSIVE : uniquement Rue -> Esiee (direction Nord)
+            if game.player.current_room.name == "Rue" and direction == "N":
+
+                if door.locked:
+                    # Vérifier si le joueur possède la carte
+                    if game.player.inventory.has_item("carte"):
+                        door.locked = False
+                        print("\nVotre carte étudiante vous permet d'entrer dans l'Esiee.\n")
+                    else:
+                        print("\nVous ne pouvez pas entrer à l'Esiee sans votre carte étudiante.\n")
+                        return False
+
+            # Pour toutes les autres portes éventuelles : porte ignorée (considérée ouverte)
+            # Donc : aucune autre porte n'est bloquée par une clé.
+
         else:
             next_room = exit_info
 

@@ -93,7 +93,7 @@ class Game:
 
         Esiee.exits = {"N" : SaadJunior, "E" : None, "S" : Rue, "O" : Bu, "U" : None, "D" : None}
         Bu.exits = {"N" : None, "E" : Esiee, "S" : None, "O" : None,"U" : None, "D" : None}
-        Rue.exits = {"N" : None, "E" : Ascenseur1, "S" : Magasin, "O" : Crackheads,"U" : None, "D" : None}
+        Rue.exits = {"N" : (Esiee, Door(locked=True, key_name="carte")), "E" : Ascenseur1, "S" : Magasin, "O" : Crackheads,"U" : None, "D" : None}
         Magasin.exits = {"N" : Rue, "E" : None, "S" : None, "O" : None,"U" : None, "D" : None}
         ChezAmine.exits = {"N" : None, "E" : None, "S" : Couloir, "O" : None,"U" : None, "D" : None}
         Couloir.exits = {"N" :  (ChezAmine, Door(locked=True, key_name="clé")), "E" : None, "S" : Ascenseur2, "O" : None,"U" : None, "D" : None}
@@ -139,15 +139,20 @@ class Game:
 
         clés = Item("clés", "celles de chez Amine",0.001)
         SaadJunior.items = ["clés"]
+        carte = Item("carte", "C'est ta carte étudiante elle te permet de rentrer dans l'école",0.001)
+        Magasin.items = ["carte"]
 
         # Porte verrouillée pour entrer chez Amine
         porte_chez_amine = Door(locked=True, key_name="clés")
         # On remplace l'exit normale par un tuple (room, door)
         Couloir.exits["N"] = (ChezAmine, porte_chez_amine)
+        porte_Esiee = Door(locked=True, key_name="carte")
+        Rue.exits["N"] = (Esiee, porte_Esiee)
 
 
         # Ajouter les items à certaines salles
         SaadJunior.inventory.add_item(clés)
+        Magasin.inventory.add_item(carte)
 
 
         # Setup player and starting room
