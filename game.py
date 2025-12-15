@@ -10,6 +10,8 @@ from item import Item
 from item import Inventory
 from room import Door
 from character import Character
+from quests import Quest
+from quests import QuestManager
 
 class Game:
 
@@ -44,7 +46,15 @@ class Game:
         self.commands["unlock"] = unlock_command
         talk_cmd = Command("talk", " <someone> : parler à un personnage", Actions.talk, 1)
         self.commands["talk"] = talk_cmd
-
+        # Quêtes: affichage et activation
+        activate_cmd = Command("activate", " <quest> : activer une quête", Actions.activate, 1)
+        self.commands["activate"] = activate_cmd
+        quests_cmd = Command("quests", " : afficher la liste des quêtes", Actions.quests, 0)
+        self.commands["quests"] = quests_cmd
+        quest_cmd = Command("quest", " <quest> : afficher les détails d'une quête", Actions.quest, 1)
+        self.commands["quest"] = quest_cmd
+        rewards_cmd = Command("rewards", " : afficher les récompenses obtenues", Actions.rewards, 0)
+        self.commands["rewards"] = rewards_cmd
 
         # Setup rooms
 
@@ -159,16 +169,28 @@ class Game:
         self.player.current_room = Esiee
         self.player.history.append(self.player.current_room)
 
+    def _setup_quests(self):
+        """Initialize all quests."""
+        Amitié = Quest(
+            title="badge de l'amitié",
+            description="parler à tout le monde",
+            objectives=["Parler à Saad"
+                        , "Parler à Amine"
+                        , "Parler à Berko"],
+            reward="du bonheur"
+        )
+
+        self.player.quest_manager.add_quest(Amitié)
+
 
     # Play the game
     def play(self):
         self.setup()
+        self._setup_quests()   # ← AJOUTE CETTE LIGNE
         self.print_welcome()
 
         while not self.finished:
             self.process_command(input("> "))
-
-
 
 
     # Process the command entered by the player

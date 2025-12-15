@@ -26,9 +26,7 @@ class Character:
         
         # Remet le message à la fin de la liste pour le cycle
         self.msgs.append(message)
-
-    import random
-
+        
     import random
 
     def move(self):
