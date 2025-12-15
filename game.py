@@ -18,8 +18,7 @@ class Game:
         self.finished = False
         self.rooms = []
         self.commands = {}
-        self.player = None
-    
+        self.player = None   
     # Setup the game
     def setup(self):
 
@@ -49,7 +48,6 @@ class Game:
 
         # Setup rooms
 
-        
         Esiee = Room("Esiee", "Lisa est dans la rue de l'esiee, au milieu des étudiants ")
         self.rooms.append(Esiee)
         Bu = Room("Bu", " Lisa est dans la bibliotèque de l'école et vous apercevez Berko au loin")
