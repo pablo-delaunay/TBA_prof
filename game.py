@@ -1,14 +1,12 @@
 " Main game class"
 from room import Room
+from room import Door
 from player import Player
 from command import Command
 from actions import Actions
 from item import Item
-from item import Inventory
-from room import Door
 from character import Character
 from quests import Quest
-from quests import QuestManager
 
 class Game:
     """Main game class."""
@@ -17,19 +15,29 @@ class Game:
         self.finished = False
         self.rooms = []
         self.commands = {}
+        self.rooms = {}
         self.player = None
+        self.characters = []
 
     def setup(self):
-        """Set up commands, rooms, characters, items, and player."""
+        """Set up the game."""
+        self.setup_commands()
+        self.setup_rooms()
+        self.setup_fail_messages()
+        self.setup_characters()
+        self.setup_items()
 
-        help = Command("help",
+    def setup_commands(self):
+        """Set up the commands."""
+
+        help_cmd = Command("help",
                        " : afficher cette aide",
                        Actions.help, 0)
-        self.commands["help"] = help
-        quit = Command("quit",
+        self.commands["help"] = help_cmd
+        quit_cmd = Command("quit",
                         " : quitter le jeu",
                         Actions.quit, 0)
-        self.commands["quit"] = quit
+        self.commands["quit"] = quit_cmd
         go = Command("go",
                      " <direction> : se déplacer dans une direction (N, E, S, O, U, D)", 
                      Actions.go, 1)
@@ -80,135 +88,154 @@ class Game:
                               Actions.rewards, 0)
         self.commands["rewards"] = rewards_cmd
 
-        # Setup rooms
-
-        Esiee = Room("Esiee",
-                     "Lisa est dans la rue de l'esiee, au milieu des étudiants ")
-        self.rooms.append(Esiee)
-        Bu = Room("Bu",
-                  " Lisa est dans la bibliotèque de l'école et vous apercevez Berko au loin")
-        self.rooms.append(Bu)
-        Rue = Room("Rue",
+    def setup_rooms(self):
+        """Set up the rooms"""
+        self.rooms["esiee"] = Room(
+            "Esiee",
+            "Lisa est dans la rue de l'esiee, au milieu des étudiants"
+        )
+        self.rooms["bu"] = Room("Bu",
+                  " Lisa est dans la bibliotèque de l'école " \
+                  "et vous apercevez Berko au loin")
+        self.rooms["rue"] = Room("Rue",
                    "Lisa est dans la rue, de l'air frais enfin")
-        self.rooms.append(Rue)
-        Magasin = Room("Magasin",
+        self.rooms["magasin"] = Room("Magasin",
                         "Lisa est dans un magasin,"
-                        " il y a tout le nécessaire pour une CE (résistances et goûts).")
-        self.rooms.append(Magasin)
-        ChezAmine = Room("Chez Amine",
+                        " il y a tout le nécessaire pour une " \
+                        "CE (résistances et goûts).")
+        self.rooms["chez_amine"]     = Room("Chez Amine",
                          "Lisa est rentré chez Amine")
-        self.rooms.append(ChezAmine)
-        Couloir = Room("Couloir",
+        self.rooms["couloir"] = Room("Couloir",
                        "Lisa est devant la porte de chez Amine")
-        self.rooms.append(Couloir)
-        Crackheads = Room("Crackheads",
-                          "Lisa croise des crackheads et se fait planter (29/09/2005 - 21/01/2026)")
-        self.rooms.append(Crackheads)
-        Ascenseur2 = Room("Ascenseur2",
-                          "Lisa est dans l'ascenseur, au deuxième étage du crous Monstesquieu")
-        self.rooms.append(Ascenseur2)
-        Ascenseur1 = Room("Ascenseur1",
+        self.rooms["crackheads"] = Room("Crackheads",
+                          "Lisa croise des crackheads et se fait " \
+                          "planter (29/09/2005 - 21/01/2026)")
+        self.rooms["ascenseur2"] = Room("Ascenseur2",
+                          "Lisa est dans l'ascenseur, au deuxième " \
+                          "étage du crous Monstesquieu")
+        self.rooms["ascenseur1"] = Room("Ascenseur1",
                             "Lisa est dans l'ascenseur,"
-                            " au premier étage du crous Monstesquieu (Amine vie ici)")
-        self.rooms.append(Ascenseur1)
-        SaadJunior = Room("SaadJunior",
-                          "Lisa croise saad dans la Junior Entreprise il lui tend ses clés")
-        self.rooms.append(SaadJunior)
-        # Create exits for rooms
+                            " au premier étage du crous " \
+                            "Monstesquieu (Amine vie ici)")
+        self.rooms["saad_junior"] = Room("SaadJunior",
+                          "Lisa croise saad dans la Junior " \
+                          "Entreprise il lui tend ses clés")
 
-        self.characters = []
-        Saad = Character("Saad", "un ami", SaadJunior, ["slt lisa c'est saad"])
-        Amine = Character("Amine", "un ami", ChezAmine, ["slt lisa c'est amine"])
-        Berko = Character("Berko", "un ami", Bu, ["slt lisa c'est berko"])
+        self.rooms["esiee"].exits = {
+            "N" : self.rooms["saad_junior"],
+            "S" : self.rooms["rue"],
+            "O" : self.rooms["bu"],
+        }
+        self.rooms["bu"].exits = {
+            "E" : self.rooms["esiee"],
+        }
+        self.rooms["rue"].exits = {
+            "N" : (self.rooms["esiee"], Door(locked=True, key_name="carte")),
+            "E" : self.rooms["ascenseur1"],
+            "S" : self.rooms["magasin"],
+            "O" : self.rooms["crackheads"],
+        }
+        self.rooms["magasin"].exits = {
+            "N" : self.rooms["rue"],
+        }
+        self.rooms["chez_amine"].exits = {
+            "S" : self.rooms["couloir"],
+        }
+        self.rooms["couloir"].exits = {
+            "N" :  (self.rooms["chez_amine"], Door(locked=True, key_name="clé")),
+            "S" : self.rooms["ascenseur2"],
+        }
+        self.rooms["ascenseur1"].exits = {
+            "O" : self.rooms["rue"],
+            "U" : self.rooms["ascenseur2"],
+        }
+        self.rooms["ascenseur2"].exits = {
+            "N" : self.rooms["couloir"],
+            "D" : self.rooms["ascenseur1"]
+        }
+        self.rooms["saad_junior"].exits = {
+            "S" : self.rooms["esiee"],
+        }
 
-        self.characters.extend([Saad, Amine, Berko])
-        SaadJunior.characters.append(Saad)
-        ChezAmine.characters.append(Amine)
-        Bu.characters.append(Berko)
-        Esiee.exits = {"N" : SaadJunior, "E" : None, "S" : Rue,
-                       "O" : Bu, "U" : None, "D" : None}
-        Bu.exits = {"N" : None, "E" : Esiee, "S" : None,
-                    "O" : None,"U" : None, "D" : None}
-        Rue.exits = {"N" : (Esiee, Door(locked=True, key_name="carte")),
-                     "E" : Ascenseur1, "S" : Magasin, "O" : Crackheads,"U" : None, "D" : None}
-        Magasin.exits = {"N" : Rue, "E" : None, "S" : None,
-                         "O" : None,"U" : None, "D" : None}
-        ChezAmine.exits = {"N" : None, "E" : None, "S" : Couloir,
-                           "O" : None,"U" : None, "D" : None}
-        Couloir.exits = {"N" :  (ChezAmine, Door(locked=True, key_name="clé")),
-                         "E" : None, "S" : Ascenseur2, "O" : None,"U" : None, "D" : None}
-        Ascenseur1.exits = {"N" : None, "E" : None, "S" : None,
-                            "O" : Rue,"U" : Ascenseur2, "D" : None}
-        Ascenseur2.exits = {"N" : Couloir, "E" : None, "S" : None,
-                            "O" : None,"U" : None, "D" : Ascenseur1}
-        SaadJunior.exits = {"N" : None, "E" : None, "S" : Esiee,
-                            "O" : None,"U" : None, "D" : None}
-
-
-        Esiee.fail_messages = {
+    def setup_fail_messages(self):
+        """Set up the fail messages for each room."""
+        self.rooms["esiee"].fail_messages = {
             "E": "Il y a un mur",
             "U": "Tu veux t'envoler ? Il y a un plafond", 
             "D": "Il n'y a pas de tunnel sous terrain désolé",
         }
-        SaadJunior.fail_messages = {
+        self.rooms["saad_junior"].fail_messages = {
             "E": "Il y a un mur", 
             "O": "Il y a un mur", 
-            "N": "Il y a Yann avec un poème à la main, Lisa fait demi-tour et reste avec Saad.",
+            "N": "Il y a Yann avec un poème à la main, "
+            "Lisa fait demi-tour et reste avec Saad.",
             "U": "Tu veux t'envoler ? Il y a un plafond",
             "D": "Il n'y a pas de tunnel sous terrain désolé",
         }
-        Bu.fail_messages = {
+        self.rooms["bu"].fail_messages = {
             "U": "Tu veux t'envoler ?", 
             "D": "Il n'y a pas de tunnel sous terrain désolé", 
         }
-        Magasin.fail_messages = {
+        self.rooms["magasin"].fail_messages = {
             "U": "Tu veux t'envoler ?", 
             "D": "Il n'y a pas de tunnel sous terrain désolé", 
         }
-        Rue.fail_messages = {
+        self.rooms["rue"].fail_messages = {
             "U": "Tu veux t'envoler ?", 
             "D": "Il n'y a pas de tunnel sous terrain désolé",
-            "N": "Tu n'as pas ta carte étudiante donc ne peut plus rentrer" 
+            "N": "Tu n'as pas ta carte étudiante "
+            "donc ne peut plus rentrer" 
         }
-        Couloir.fail_messages = {
+        self.rooms["couloir"].fail_messages = {
             "U": "Tu veux t'envoler ? Il y a un plafond", 
             "D": "Il n'y a pas de tunnel sous terrain désolé", 
         }
-        ChezAmine.fail_messages = {
+        self.rooms["chez_amine"].fail_messages = {
             "U": "Tu veux t'envoler ? Il y a un plafond", 
             "D": "Il n'y a pas de tunnel sous terrain désolé", 
         }
 
+    def setup_characters(self):
+        """Set up the characters."""
 
-        clés = Item("clés",
+        self.characters = []
+        saad = Character("Saad", "un ami", self.rooms["saad_junior"], ["slt lisa c'est saad"])
+        amine = Character("Amine", "un ami", self.rooms["chez_amine"], ["slt lisa c'est amine"])
+        berko = Character("Berko", "un ami", self.rooms["bu"], ["slt lisa c'est berko"])
+
+        self.characters.extend([saad, amine, berko])
+        self.rooms["saad_junior"].characters.append(saad)
+        self.rooms["chez_amine"].characters.append(amine)
+        self.rooms["bu"].characters.append(berko)
+
+    def setup_items(self):
+        """Set up the items."""
+        cles = Item("clés",
                     "celles de chez Amine",0.001)
-        SaadJunior.items = ["clés"]
+        self.rooms["saad_junior"].items = ["clés"]
         carte = Item("carte",
-                     "C'est ta carte étudiante elle te permet de rentrer dans l'école",0.001)
-        Magasin.items = ["carte"]
-
-        # Porte verrouillée
+                     "C'est ta carte étudiante elle " \
+                     "te permet de rentrer dans l'école",0.001)
+        self.rooms["magasin"].items = ["carte"]
         porte_chez_amine = Door(locked=True, key_name="clés")
         # On remplace l'exit normale par un tuple (room, door)
-        Couloir.exits["N"] = (ChezAmine, porte_chez_amine)
-        porte_Esiee = Door(locked=True, key_name="carte")
-        Rue.exits["N"] = (Esiee, porte_Esiee)
+        self.rooms["couloir"].exits["N"] = (self.rooms["chez_amine"], porte_chez_amine)
+        porte_esiee = Door(locked=True, key_name="carte")
+        self.rooms["rue"].exits["N"] = (self.rooms["esiee"], porte_esiee)
 
 
         # Ajouter les items à certaines salles
-        SaadJunior.inventory.add_item(clés)
-        Magasin.inventory.add_item(carte)
+        self.rooms["saad_junior"].inventory.add_item(cles)
+        self.rooms["magasin"].inventory.add_item(carte)
 
-
-        # Setup player and starting room
 
         self.player = Player(input("\nEntrez votre nom: "))
-        self.player.current_room = Esiee
+        self.player.current_room = self.rooms["esiee"]
         self.player.history.append(self.player.current_room)
 
     def _setup_quests(self):
         """Initialize all quests."""
-        Amitié = Quest(
+        amitie = Quest(
             title="badge de l'amitié",
             description="parler à tout le monde",
             objectives=["Parler à Saad"
@@ -217,11 +244,12 @@ class Game:
             reward="du bonheur"
         )
 
-        self.player.quest_manager.add_quest(Amitié)
+        self.player.quest_manager.add_quest(amitie)
 
 
     # Play the game
     def play(self):
+        """Play the game."""
         self.setup()
         self._setup_quests()   # ← AJOUTE CETTE LIGNE
         self.print_welcome()
@@ -230,8 +258,8 @@ class Game:
             self.process_command(input("> "))
 
 
-    # Process the command entered by the player
     def process_command(self, command_string) -> None:
+        """Process the command entered by the player."""
 
         # Split the command string into a list of words
         list_of_words = command_string.split(" ")
@@ -239,15 +267,15 @@ class Game:
         command_word = list_of_words[0]
 
         # If the command is not recognized, print an error message
-        if command_word not in self.commands.keys():
-            print(f"  ")
+        if command_word not in self.commands:
+            print("  ")
         # If the command is recognized, execute it
         else:
             command = self.commands[command_word]
             command.action(self, list_of_words, command.number_of_parameters)
 
-    # Print the welcome message
     def print_welcome(self):
+        """Print the welcome message."""
         print(
             f"\nBienvenue {self.player.name}, vous incarnez Lisa une jeune étudiante "
             "de l'Esiee à la recherche d'une CE. Elle est en total manque de nicotine, "
@@ -257,25 +285,9 @@ class Game:
         #
         print(self.player.current_room.get_long_description())
 
-    def back(game, list_of_words, number_of_parameters):
-        if len(game.player.history) <= 1:
-            print("\nVous ne pouvez pas revenir en arrière.\n")
-            return
-
-        # Supprime la salle actuelle de l'historique
-        game.player.history.pop()
-
-        # Revenir à la salle précédente
-        game.player.current_room = game.player.history[-1]
-
-        # Afficher la description et l'historique
-        print(game.player.current_room.get_long_description())
-        hist = game.player.get_history()
-        if hist != "":
-            print(hist)
 
 def main():
-    # Create a game object and play the game
+    """Main function to start the game."""
     Game().play()
 
 if __name__ == "__main__":
