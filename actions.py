@@ -1,4 +1,6 @@
 " Actions for the game commands."
+
+
 MSG0 = "\nLa commande '{command_word}' ne prend pas de paramètre.\n"
 MSG1 = "\nLa commande '{command_word}' prend 1 seul paramètre.\n"
 
@@ -232,7 +234,13 @@ class Actions:
         player.inventory.add_item(found)
 
         print(f"\nVous avez pris l'objet '{found.name}'.\n")
+
+        if found.name.lower() == "chien":
+            game.player.quest_manager.complete_objective("Prendre le chien")
+
         return True
+    
+
 
 
     @staticmethod
@@ -268,6 +276,9 @@ class Actions:
         room.inventory.add_item(item)
 
         print(f"\nVous avez déposé l'objet '{item.name}'.\n")
+        if room.name.lower() == "parc" and item.name.lower() == "chien":
+            game.player.quest_manager.complete_objective("Ramener le chien au parc")
+
 
     @staticmethod
     def check(game, list_of_words, _number_of_parameters):
@@ -465,6 +476,98 @@ class Actions:
         # print(f"\nImpossible d'activer la quête '{quest_title}'. \
         #             Vérifiez le nom ou si elle n'est pas déjà active.\n")
         return False
+
+    @staticmethod
+    def give(game, list_of_words, _number_of_parameters):
+        """
+        Permet au joueur de donner un objet à un personnage dans la salle.
+
+        Args:
+            game (Game): L'objet jeu.
+            list_of_words (list[str]): La commande, le nom de l'objet et le nom du personnage.
+            _number_of_parameters (int): Non utilisé.
+
+        Returns:
+            None
+        """
+        if len(list_of_words) != 3:
+            print("Utilisation : give <nom de l'objet> <nom du personnage>")
+            return
+
+        item_name = list_of_words[1].lower()
+        target_name = list_of_words[2].lower()
+        player = game.player
+        room = player.current_room
+
+        # Vérifier si l'objet est dans l'inventaire du joueur
+        item = player.inventory.remove_item(item_name)
+        if item is None:
+            print(f"\nVous ne possédez pas l'objet '{item_name}'.\n")
+            return
+
+        # Chercher le personnage par nom dans la salle
+        target = None
+        for char in room.characters:
+            if char.name.lower() == target_name:
+                target = char
+                break
+
+        if not target:
+            print(f"{target_name} n'est pas présent ici.")
+            # Remettre l'objet dans l'inventaire du joueur
+            player.inventory.add_item(item)
+            return
+
+        # Donner l'objet au personnage
+        print(f"\nVous donnez '{item.name}' à {target.name}.\n")
+        target.receive_item(item)
+
+        # Compléter la quête si elle existe
+        if player.quest_manager:
+            quest_title = f"Ramener le {item.name.lower()} à {target.name}"
+            completed = player.quest_manager.complete_objective(quest_title)
+            if completed:
+                print(f"🎉 Vous avez complété l'objectif '{quest_title}' !")
+
+
+
+        
+    
+    def move(self, direction):
+        """
+        Déplace le joueur vers une salle voisine.
+
+        Args:
+            direction (str): La direction du déplacement (ex: 'N', 'E', ...).
+
+        Returns:
+            bool: True si le déplacement est réussi, False sinon.
+        """
+        next_room = self.current_room.exits.get(direction)
+
+        if next_room is None:
+            # Message personnalisé si défini dans la salle
+            if direction in self.current_room.fail_messages:
+                print("\n" + self.current_room.fail_messages[direction] + "\n")
+            else:
+                print("\nImpossible d'aller dans cette direction.\n")
+            return False
+
+        # Mise à jour de la salle actuelle et de l'historique
+        self.current_room = next_room
+        self.history.append(self.current_room)
+        print(self.current_room.get_long_description())
+
+        # Affichage de l'historique
+        hist = self.get_history()
+        if hist:
+            print(hist)
+
+        # Incrément du compteur de déplacements
+        self.status.move_count += 1
+
+        return True
+
 
 
     @staticmethod

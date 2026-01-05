@@ -1,6 +1,7 @@
 """Module contenant les classes Player et Status."""
 
 from item import Inventory
+from item import Item
 from quests import QuestManager
 
 class Status:
@@ -71,6 +72,8 @@ class Player:
         self.inventory = Inventory()
         self.quest_manager = QuestManager()
         self.status = Status()
+        self.quest_manager = QuestManager(self)
+        self.rewards = []
 
     def get_total_weight(self):
         """
@@ -81,40 +84,16 @@ class Player:
         """
         return sum(item.weight for item in self.inventory.items)
 
-    def move(self, direction):
-        """
-        Déplace le joueur vers une salle voisine.
+    def add_reward(self, reward):
+        if reward == "un cookie":
+            cookie = Item(
+                name="cookie",
+                description="Un délicieux cookie offert par Manon",
+                weight=0.2
+            )
+            self.inventory.add_item(cookie)
+            print("🍪 Vous recevez un cookie !")
 
-        Args:
-            direction (str): La direction du déplacement (ex: 'N', 'E', ...).
-
-        Returns:
-            bool: True si le déplacement est réussi, False sinon.
-        """
-        next_room = self.current_room.exits.get(direction)
-
-        if next_room is None:
-            # Message personnalisé si défini dans la salle
-            if direction in self.current_room.fail_messages:
-                print("\n" + self.current_room.fail_messages[direction] + "\n")
-            else:
-                print("\nImpossible d'aller dans cette direction.\n")
-            return False
-
-        # Mise à jour de la salle actuelle et de l'historique
-        self.current_room = next_room
-        self.history.append(self.current_room)
-        print(self.current_room.get_long_description())
-
-        # Affichage de l'historique
-        hist = self.get_history()
-        if hist:
-            print(hist)
-
-        # Incrément du compteur de déplacements
-        self.status.move_count += 1
-
-        return True
 
     def get_history(self):
         """

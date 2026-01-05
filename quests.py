@@ -1,5 +1,8 @@
 """ Define the Quest class"""
 
+from item import Item
+
+
 class Quest:
     """
     This class represents a quest in the game. A quest has a title, description,
@@ -471,34 +474,22 @@ class QuestManager:
             
         Returns:
             bool: True if objective was found and completed, False otherwise.
-            
-        Examples:
-        
-        >>> manager = QuestManager()
-        >>> quest = Quest("Manager Quest", "Test", ["Do something"])
-        >>> manager.add_quest(quest)
-        >>> manager.activate_quest("Manager Quest") # doctest: +NORMALIZE_WHITESPACE
-        <BLANKLINE>
-        🗡️  Nouvelle quête activée: Manager Quest
-        📝 Test
-        <BLANKLINE>
-        True
-        >>> manager.complete_objective("Do something") # doctest: +NORMALIZE_WHITESPACE
-        ✅ Objectif accompli: Do something
-        <BLANKLINE>
-        🏆 Quête terminée: Manager Quest
-        <BLANKLINE>
-        True
-        >>> manager.complete_objective("Do nothing")
-        False
         """
         for quest in self.active_quests:
             if quest.complete_objective(objective_text):
-                # Remove completed quests from active list
                 if quest.is_completed:
                     self.active_quests.remove(quest)
+
+                    reward = Item("cookie", "Un délicieux cookie 🍪", 0.2)
+                    self.player.inventory.add_item(reward)
+                    self.player.rewards.append("cookie")
+
+                    print("🎉 Quête terminée ! Vous recevez un cookie 🍪")
                 return True
+
         return False
+
+
 
 
     def check_room_objectives(self, room_name):

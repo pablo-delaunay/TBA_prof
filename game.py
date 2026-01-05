@@ -19,6 +19,7 @@ class Game:
         self.player = None
         self.characters = []
 
+
     def setup(self):
         """Set up the game."""
         self.setup_commands()
@@ -87,6 +88,12 @@ class Game:
                               " : afficher les récompenses obtenues",
                               Actions.rewards, 0)
         self.commands["rewards"] = rewards_cmd
+        give_cmd = Command(
+            "give",
+            " <item> <someone> : donner un objet à un personnage",
+            Actions.give, 2
+        )
+        self.commands["give"] = give_cmd
 
     def setup_rooms(self):
         """Set up the rooms"""
@@ -168,6 +175,7 @@ class Game:
         self.rooms["saad_junior"].exits = {
             "S" : self.rooms["esiee"],
             "N" : self.rooms["Rue_2"],
+            "E" : self.rooms["Crous"],
         }
         self.rooms["crackheads"].exits = {
             "E" : self.rooms["Chemin"],
@@ -183,10 +191,10 @@ class Game:
         }
         self.rooms["Rue_2"].exits = {
             "O" : self.rooms["Chemin"],
-            "S" : self.rooms["Crous"],
+            "S" : self.rooms["saad_junior"],
         }
         self.rooms["Crous"].exits = {
-            "E" : self.rooms["saad_junior"],
+            "O" : self.rooms["saad_junior"],
         }
 
 
@@ -235,15 +243,18 @@ class Game:
         saad = Character("Saad", "un ami", self.rooms["saad_junior"], ["slt lisa c'est saad"])
         amine = Character("Amine", "un ami", self.rooms["chez_amine"], ["slt lisa c'est amine"])
         berko = Character("Berko", "un ami", self.rooms["bu"], ["slt lisa c'est berko"])
-        manon = Character("Manon", "un ami", self.rooms["Parc"], ["slt lisa c'est berko"])
-        pablo = Character("Berko", "un ami", self.rooms["bu"], ["slt lisa c'est berko"])
-        titouan = Character("Berko", "un ami", self.rooms["bu"], ["slt lisa c'est berko"])
+        manon = Character("Manon", "un ami", self.rooms["Parc"], ["slt lisa c'est manon"])
+        pablo = Character("Pablo", "un ami", self.rooms["esiee"], ["slt lisa c'est pablo"])
+        titouan = Character("Titouan", "un ami", self.rooms["Chemin"], ["slt lisa c'est titouan"])
 
 
-        self.characters.extend([saad, amine, berko])
+        self.characters.extend([saad, amine, berko, manon, pablo, titouan])
         self.rooms["saad_junior"].characters.append(saad)
         self.rooms["chez_amine"].characters.append(amine)
         self.rooms["bu"].characters.append(berko)
+        self.rooms["Parc"].characters.append(manon)
+        self.rooms["esiee"].characters.append(pablo)
+        self.rooms["Chemin"].characters.append(titouan)
 
     def setup_items(self):
         """Set up the items."""
@@ -254,16 +265,26 @@ class Game:
                      "C'est ta carte étudiante elle " \
                      "te permet de rentrer dans l'école",0.001)
         self.rooms["Parc"].items = ["carte"]
+        chien = Item("chien",
+                    "il est très triste rapporte le a Manon"\
+                    " le plus vite possible.", 5)
+        self.rooms["Rue_2"].items = ["chien"]
+
+
+
+
+
         porte_chez_amine = Door(locked=True, key_name="clés")
-        # On remplace l'exit normale par un tuple (room, door)
         self.rooms["couloir"].exits["N"] = (self.rooms["chez_amine"], porte_chez_amine)
         porte_esiee = Door(locked=True, key_name="carte")
         self.rooms["rue"].exits["N"] = (self.rooms["esiee"], porte_esiee)
 
 
+
         # Ajouter les items à certaines salles
         self.rooms["saad_junior"].inventory.add_item(cles)
         self.rooms["Parc"].inventory.add_item(carte)
+        self.rooms["Rue_2"].inventory.add_item(chien)
 
 
         self.player = Player(input("\nEntrez votre nom: "))
@@ -273,7 +294,7 @@ class Game:
     def _setup_quests(self):
         """Initialize all quests."""
         amitie = Quest(
-            title="badge de l'amitié",
+            title="Badge de l'amitié",
             description="parler à tout le monde",
             objectives=["Parler à Saad"
                         , "Parler à Amine"
@@ -281,14 +302,35 @@ class Game:
             reward="du bonheur"
         )
 
+        manon = Quest(
+            title="Aider Manon",
+            description="Manon a besoin de votre aide. Retrouvez son chien.",
+            objectives=[
+                "Prendre le chien",
+                "Ramener le chien au parc"
+            ],
+            reward="un cookie"
+        )
+
+        pablo = Quest(
+            title="Mission Pablo",
+            description="Pablo veut un cookie, aide le a en trouver un.",
+            objectives=[
+                "Ramener le cookie à Pablo"
+            ],
+            reward="10€ de la part de Pablo"
+        )
+
         self.player.quest_manager.add_quest(amitie)
+        self.player.quest_manager.add_quest(manon)
+        self.player.quest_manager.add_quest(pablo)
 
 
     # Play the game
     def play(self):
         """Play the game."""
         self.setup()
-        self._setup_quests()   # ← AJOUTE CETTE LIGNE
+        self._setup_quests()
         self.print_welcome()
 
         while not self.finished:

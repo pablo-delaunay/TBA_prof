@@ -6,6 +6,8 @@ dans le jeu, avec ses messages et son déplacement aléatoire.
 """
 import random
 
+from item import Inventory
+
 class Character:
     """
     Cette classe représente un personnage non-joueur (PNJ) dans le jeu.
@@ -28,7 +30,7 @@ class Character:
         move(self) : Déplace le personnage aléatoirement vers une salle adjacente si possible.
     """
 
-    def __init__(self, name, description, current_room=None, msgs=None):
+    def __init__(self, name, description, current_room=None, msgs=None, inventory=None):
         """
         Initialise un personnage.
 
@@ -44,6 +46,8 @@ class Character:
         self.msgs = msgs if msgs is not None else []
         self._msg_index = 0
         self.last_room = current_room
+        self.inventory = inventory if inventory else Inventory()
+        self.messages = []
 
     def __str__(self):
         """
@@ -53,6 +57,16 @@ class Character:
             str: Nom et description du personnage.
         """
         return f"{self.name} : {self.description}"
+    
+    
+    def get_msg(self):
+        for msg in self.messages:
+            print(msg)
+
+    def receive_item(self, item):
+        """Ajoute un objet à l'inventaire du personnage."""
+        self.inventory.add_item(item)
+        print(f"{self.name} a reçu '{item.name}'.")
 
     def get_msg(self):
         """
