@@ -39,6 +39,7 @@ class Actions:
 
         if isinstance(exit_info, tuple):
             next_room, door = exit_info
+        
             if not Actions._handle_locked_door(game, direction, door):
                 return False
         else:
@@ -77,16 +78,9 @@ class Actions:
 
     @staticmethod
     def _handle_locked_door(game, direction, door):
-        """Gère la porte verrouillée Rue -> Esiee uniquement."""
-        if game.player.current_room.name == "Rue" and direction == "N" and door.locked:
-            if game.player.inventory.has_item("carte"):
-                door.locked = False
-                print("\nVotre carte étudiante vous permet d'entrer dans l'Esiee.\n")
-                return True
-
-            print("\nVous ne pouvez pas entrer à l'Esiee sans votre carte étudiante.\n")
+        if door.locked:
+            print("\n🚪 La porte est verrouillée. Utilisez 'unlock <direction>'.\n")
             return False
-
         return True
 
     @staticmethod
@@ -329,7 +323,7 @@ class Actions:
             print("Il n'y a pas de porte dans cette direction.")
             return
 
-        door = exit_info
+        _, door = exit_info
 
         if not door.locked:
             print("La porte est déjà ouverte.")

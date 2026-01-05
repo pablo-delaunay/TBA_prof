@@ -120,6 +120,18 @@ class Game:
         self.rooms["saad_junior"] = Room("SaadJunior",
                           "Lisa croise saad dans la Junior " \
                           "Entreprise il lui tend ses clés")
+        self.rooms["Parc"] = Room("Parc",
+                       "Lisa est dans le parc, il y a plein " \
+                       "d'étudiants qui fument des CE ici")
+        self.rooms["Chemin"] = Room("Chemin",
+                       "Lisa est dans le chemin entre le parc et " \
+                       "l'autre coté de l'école")
+        self.rooms["Rue_2"] = Room("Rue_2",
+                       "Lisa est dans la rue dèrriere l'école")
+        self.rooms["Crous"] = Room("Crous",
+                       "Lisa est dans le crous")
+        self.rooms["epi1"] = Room("epi1",
+                       "Lisa est dans l'epi1 à l'étage")
 
         self.rooms["esiee"].exits = {
             "N" : self.rooms["saad_junior"],
@@ -133,7 +145,7 @@ class Game:
             "N" : (self.rooms["esiee"], Door(locked=True, key_name="carte")),
             "E" : self.rooms["ascenseur1"],
             "S" : self.rooms["magasin"],
-            "O" : self.rooms["crackheads"],
+            "O" : self.rooms["Parc"],
         }
         self.rooms["magasin"].exits = {
             "N" : self.rooms["rue"],
@@ -155,7 +167,28 @@ class Game:
         }
         self.rooms["saad_junior"].exits = {
             "S" : self.rooms["esiee"],
+            "N" : self.rooms["Rue_2"],
         }
+        self.rooms["crackheads"].exits = {
+            "E" : self.rooms["Chemin"],
+        }
+        self.rooms["Parc"].exits = {
+            "N" : self.rooms["Chemin"],
+            "E" : self.rooms["rue"],
+        }
+        self.rooms["Chemin"].exits = {
+            "S" : self.rooms["Parc"],
+            "E" : self.rooms["Rue_2"],
+            "O" : self.rooms["crackheads"],
+        }
+        self.rooms["Rue_2"].exits = {
+            "O" : self.rooms["Chemin"],
+            "S" : self.rooms["Crous"],
+        }
+        self.rooms["Crous"].exits = {
+            "E" : self.rooms["saad_junior"],
+        }
+
 
     def setup_fail_messages(self):
         """Set up the fail messages for each room."""
@@ -202,6 +235,10 @@ class Game:
         saad = Character("Saad", "un ami", self.rooms["saad_junior"], ["slt lisa c'est saad"])
         amine = Character("Amine", "un ami", self.rooms["chez_amine"], ["slt lisa c'est amine"])
         berko = Character("Berko", "un ami", self.rooms["bu"], ["slt lisa c'est berko"])
+        manon = Character("Manon", "un ami", self.rooms["Parc"], ["slt lisa c'est berko"])
+        pablo = Character("Berko", "un ami", self.rooms["bu"], ["slt lisa c'est berko"])
+        titouan = Character("Berko", "un ami", self.rooms["bu"], ["slt lisa c'est berko"])
+
 
         self.characters.extend([saad, amine, berko])
         self.rooms["saad_junior"].characters.append(saad)
@@ -216,7 +253,7 @@ class Game:
         carte = Item("carte",
                      "C'est ta carte étudiante elle " \
                      "te permet de rentrer dans l'école",0.001)
-        self.rooms["magasin"].items = ["carte"]
+        self.rooms["Parc"].items = ["carte"]
         porte_chez_amine = Door(locked=True, key_name="clés")
         # On remplace l'exit normale par un tuple (room, door)
         self.rooms["couloir"].exits["N"] = (self.rooms["chez_amine"], porte_chez_amine)
@@ -226,7 +263,7 @@ class Game:
 
         # Ajouter les items à certaines salles
         self.rooms["saad_junior"].inventory.add_item(cles)
-        self.rooms["magasin"].inventory.add_item(carte)
+        self.rooms["Parc"].inventory.add_item(carte)
 
 
         self.player = Player(input("\nEntrez votre nom: "))
