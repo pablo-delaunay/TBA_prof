@@ -31,7 +31,6 @@ class Status:
         """
         if reward and reward not in self.rewards:
             self.rewards.append(reward)
-            print(f"\n🎁 Vous avez obtenu : {reward}\n")
 
     def show_rewards(self):
         """
@@ -74,6 +73,7 @@ class Player:
         self.status = Status()
         self.quest_manager = QuestManager(self)
         self.rewards = []
+        self.money = 0
 
     def get_total_weight(self):
         """
@@ -117,3 +117,18 @@ class Player:
             str: La description des objets présents dans l'inventaire.
         """
         return self.inventory.get_inventory()
+    
+    def add_money(self, amount):
+        self.money += amount
+        print(f"💰 Vous gagnez {amount}€")
+
+    def spend_money(self, amount):
+        if self.money < amount:
+            print("❌ Vous n'avez pas assez d'argent.")
+            return False
+        self.money -= amount
+        print(f"💸 Vous dépensez {amount}€")
+        return True
+
+    def show_money(self):
+        print(f"💰 Argent : {self.money}€")

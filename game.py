@@ -4,7 +4,7 @@ from room import Door
 from player import Player
 from command import Command
 from actions import Actions
-from item import Item
+from item import Inventory, Item
 from character import Character
 from quests import Quest
 
@@ -90,10 +90,51 @@ class Game:
         self.commands["rewards"] = rewards_cmd
         give_cmd = Command(
             "give",
-            " <item> <someone> : donner un objet à un personnage",
+            " <item> <character> : donner un objet à un personnage",
             Actions.give, 2
         )
         self.commands["give"] = give_cmd
+        money_cmd = Command(
+            "money",
+            " : afficher l'argent du joueur",
+            Actions.money, 0
+        )
+        self.commands["money"] = money_cmd
+        buy_cmd = Command(
+            "buy",
+            " <item> : acheter un objet au magasin",
+            Actions.buy,
+            1
+        )
+        self.commands["buy"] = buy_cmd
+        sell_cmd = Command(
+            "sell",
+            " <item> : vendre un objet au magasin",
+            Actions.sell,
+            1
+        )
+        self.commands["sell"] = sell_cmd
+        ask_cmd = Command(
+            "ask",
+            " <item> <character> : demander un objet à un personnage",
+            Actions.ask,
+            2
+        )
+        self.commands["ask"] = ask_cmd
+        read_cmd = Command(
+            "read",
+            " <objet> : lire quelque chose",
+            Actions.read,
+            1
+        )
+        self.commands["read"] = read_cmd
+        create_cmd = Command(
+            "create",
+            " <item> : créer un objet si vous avez les ingrédients nécessaires",
+            Actions.create,
+            1
+        )
+        self.commands["create"] = create_cmd
 
     def setup_rooms(self):
         """Set up the rooms"""
@@ -110,7 +151,7 @@ class Game:
                         "Lisa est dans un magasin,"
                         " il y a tout le nécessaire pour une " \
                         "CE (résistances et goûts).")
-        self.rooms["chez_amine"]     = Room("Chez Amine",
+        self.rooms["chez_amine"] = Room("Chez Amine",
                          "Lisa est rentré chez Amine")
         self.rooms["couloir"] = Room("Couloir",
                        "Lisa est devant la porte de chez Amine")
@@ -144,6 +185,7 @@ class Game:
             "N" : self.rooms["saad_junior"],
             "S" : self.rooms["rue"],
             "O" : self.rooms["bu"],
+            "U" : self.rooms["epi1"],
         }
         self.rooms["bu"].exits = {
             "E" : self.rooms["esiee"],
@@ -196,6 +238,17 @@ class Game:
         self.rooms["Crous"].exits = {
             "O" : self.rooms["saad_junior"],
         }
+        self.rooms["epi1"].exits = {
+            "D" : self.rooms["esiee"],
+        }
+
+        self.rooms["magasin"].is_shop = True
+        self.rooms["bu"].book_text = (
+            "Vous trouvez un livre vous expliquant comment faire votre propre gout\n"
+            "« Pour faire votre gout :\n"
+            " - de la base ( sans doute au crous )\n"
+            " - des cerises ( dans le magasin ) »\n"
+    )
 
 
     def setup_fail_messages(self):
@@ -240,11 +293,15 @@ class Game:
         """Set up the characters."""
 
         self.characters = []
-        saad = Character("Saad", "un ami", self.rooms["saad_junior"], ["slt lisa c'est saad"])
+        saad = Character("Saad", "un ami", self.rooms["saad_junior"], ["Coucou Lisa, si tu veux aller chez "
+        "Amine j'ai posé les clés sur le bureau"])
         amine = Character("Amine", "un ami", self.rooms["chez_amine"], ["slt lisa c'est amine"])
-        berko = Character("Berko", "un ami", self.rooms["bu"], ["slt lisa c'est berko"])
-        manon = Character("Manon", "un ami", self.rooms["Parc"], ["slt lisa c'est manon"])
-        pablo = Character("Pablo", "un ami", self.rooms["esiee"], ["slt lisa c'est pablo"])
+        berko = Character("Berko", "un ami", self.rooms["bu"], ["Désolé je n'ai pas de CE sur moi,"
+        " va voir Saad ou Amine"])
+        manon = Character("Manon", "un ami", self.rooms["Parc"], ["Lisaaaa ! J'ai perdu mon chien, "
+        "si tu le trouves ramène le au parc"])
+        pablo = Character("Pablo", "un ami", self.rooms["esiee"], ["Ok je vois, si tu me ramènes un cookie je te"
+        " passe 10€ pour que tu t'achètes une résistance"])
         titouan = Character("Titouan", "un ami", self.rooms["Chemin"], ["slt lisa c'est titouan"])
 
 
@@ -255,6 +312,13 @@ class Game:
         self.rooms["Parc"].characters.append(manon)
         self.rooms["esiee"].characters.append(pablo)
         self.rooms["Chemin"].characters.append(titouan)
+
+
+        amine.inventory = Inventory()  # Ajoute un inventaire à Amine
+        ce = Item("CE", "Vous possédez une cigarette électronique", 0.001, price=0)
+        amine.inventory.add_item(ce)   # Met la CE dans l'inventaire d'Amine
+
+        
 
     def setup_items(self):
         """Set up the items."""
@@ -269,10 +333,9 @@ class Game:
                     "il est très triste rapporte le a Manon"\
                     " le plus vite possible.", 5)
         self.rooms["Rue_2"].items = ["chien"]
-
-
-
-
+        base = Item("base",
+                    "de la base pour faire un gout", 0.5)
+        self.rooms["epi1"].money = 5
 
         porte_chez_amine = Door(locked=True, key_name="clés")
         self.rooms["couloir"].exits["N"] = (self.rooms["chez_amine"], porte_chez_amine)
@@ -280,16 +343,50 @@ class Game:
         self.rooms["rue"].exits["N"] = (self.rooms["esiee"], porte_esiee)
 
 
-
         # Ajouter les items à certaines salles
         self.rooms["saad_junior"].inventory.add_item(cles)
         self.rooms["Parc"].inventory.add_item(carte)
         self.rooms["Rue_2"].inventory.add_item(chien)
+        self.rooms["Crous"].inventory.add_item(base)
+        self.rooms["epi1"].money = 5
 
+        resistance = Item(
+            "résistance",
+            "Une résistance pour CE",
+            0.01,
+            price=10
+        )
+        cigarette_electronique = Item(
+            "cigarette électronique",
+            "Une cigarette électronique",
+            0.2,
+            price=50
+        )
+
+        gout = Item(
+            "gout",
+            "Un gout pour CE",
+            0.005,
+            price=10
+        )
+
+        cerise = Item(
+            "cerise",
+            "Des cerises pour faire un gout",
+            0.2,
+            price=5
+        )
+
+        self.rooms["magasin"].inventory.add_item(resistance)
+        self.rooms["magasin"].inventory.add_item(cigarette_electronique)
+        self.rooms["magasin"].inventory.add_item(gout)
+        self.rooms["magasin"].inventory.add_item(cerise)
 
         self.player = Player(input("\nEntrez votre nom: "))
         self.player.current_room = self.rooms["esiee"]
         self.player.history.append(self.player.current_room)
+
+      
 
     def _setup_quests(self):
         """Initialize all quests."""
@@ -298,7 +395,10 @@ class Game:
             description="parler à tout le monde",
             objectives=["Parler à Saad"
                         , "Parler à Amine"
-                        , "Parler à Berko"],
+                        , "Parler à Berko"
+                        , "Parler à Manon"
+                        , "Parler à Pablo"
+                        , "Parler à Titouan"],
             reward="du bonheur"
         )
 
@@ -309,8 +409,12 @@ class Game:
                 "Prendre le chien",
                 "Ramener le chien au parc"
             ],
-            reward="un cookie"
-        )
+        reward={
+            "type": "item",
+            "name": "cookie",
+            "weight": 0.2
+        }
+)
 
         pablo = Quest(
             title="Mission Pablo",
@@ -318,12 +422,41 @@ class Game:
             objectives=[
                 "Ramener le cookie à Pablo"
             ],
-            reward="10€ de la part de Pablo"
+    reward={
+        "type": "money",
+        "amount": 10
+    }
+)
+        final = Quest(
+            title="Finir le jeu",
+            description="Trouver une cigarette électronique, un gout et une résistance pour Lisa.",
+            objectives=[
+                "Avoir une CE dans l'inventaire",
+                "Avoir un gout dans l'inventaire",
+                "Avoir une résistance dans l'inventaire"
+            ],
+            reward="Fin du jeu"
+        )
+
+        gout = Quest(
+            title="fabriquer un gout",
+            description="fabriquer un gout pour la CE de Lisa",
+            objectives=[
+                "trouver les ingredients pour faire un gout",
+                "creer le gout",
+            ],
+            reward={
+                "type": "item",
+                "name": "gout",
+                "weight": 0.005
+            }
         )
 
         self.player.quest_manager.add_quest(amitie)
         self.player.quest_manager.add_quest(manon)
         self.player.quest_manager.add_quest(pablo)
+        self.player.quest_manager.add_quest(final)
+        self.player.quest_manager.add_quest(gout)
 
 
     # Play the game

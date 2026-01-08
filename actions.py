@@ -1,6 +1,9 @@
 " Actions for the game commands."
 
 
+from item import Item
+
+
 MSG0 = "\nLa commande '{command_word}' ne prend pas de paramètre.\n"
 MSG1 = "\nLa commande '{command_word}' prend 1 seul paramètre.\n"
 
@@ -19,6 +22,7 @@ class Actions:
         Returns:
             bool: True si le déplacement a été effectué, False sinon.
         """
+
         player = game.player
 
         # Vérifie le nombre de paramètres
@@ -26,6 +30,20 @@ class Actions:
             command_word = list_of_words[0]
             print(MSG1.format(command_word=command_word))
             return False
+        
+        direction = list_of_words[1].upper()
+
+                # ⚠️ Avertissement Crackheads depuis le Chemin
+        if player.current_room == game.rooms["Chemin"] and direction == "O":
+            print("Titouan : Lisa il y a des crackheads là-bas c'est dangereux, tu es sûre d'y aller ?")
+            answer = input("(oui / non) > ").lower().strip()
+            if answer == "oui":
+                print("\nLisa est morte tuée.")
+                game.finished = True
+                return False
+            else:
+                print("\nTu restes dans le chemin.")
+                return False
 
         direction = Actions._get_direction(list_of_words[1])
         if not direction:
@@ -53,6 +71,12 @@ class Actions:
 
         # Affichage
         print(next_room.get_long_description())
+        if getattr(next_room, "is_shop", False):
+            print("\n🛒 Le magasin propose :")
+            for item in next_room.inventory.items:
+                print(f" - {item.name} ({item.price}€)")
+
+
         hist = player.get_history()
         if hist:
             print(hist)
@@ -172,20 +196,25 @@ class Actions:
 
     @staticmethod
     def look(game, _list_of_words, _number_of_parameters):
-        """
-        Affiche la description complète de la salle actuelle et les objets qu'elle contient.
-
-        Args:
-            game (Game): L'objet jeu.
-
-        Returns:
-            None
-        """
         room = game.player.current_room
-        # Affiche la description longue de la salle
-        print(room.get_long_description())
-        # Affiche les items présents dans la salle
-        print(room.get_inventory())
+
+
+        # Argent au sol
+        money = getattr(room, "money", 0)
+        if money > 0:
+            print(f"💰 Vous trouvez {money}€ par terre.")
+            game.player.money += money
+            room.money = 0
+
+        # Livre dans la BU
+        if room.name.lower() == "bu":
+            print("📘 Un livre est posé sur une table. (read livre)")
+
+        # Inventaire de la pièce
+        if getattr(room, "is_shop", False):
+            print("🛒 Des objets sont en vente ici. Utilisez `buy <objet>`.")
+        else:
+            print(room.get_inventory())
 
 
     @staticmethod
@@ -384,6 +413,7 @@ class Actions:
 
         objective = f"Parler à {target.name}"
         game.player.quest_manager.complete_objective(objective)
+        print(char.inventory.get_inventory(f"{char.name} possède :"))
 
     @staticmethod
     def quests(game, list_of_words, number_of_parameters):
@@ -531,8 +561,53 @@ class Actions:
 
 
 
-        
-    
+    @staticmethod
+    def ask(game, words, num_params):
+        item_name = words[1].lower()      # normalisation
+        target_name = words[2].lower()
+
+        # trouver le personnage
+        target = None
+        for character in game.characters:
+            if character.name.lower() == target_name:
+                target = character
+                break
+        if not target:
+            print(f"{target_name} n'est pas là.")
+            return
+
+        # vérifier si l'objet existe dans l'inventaire du personnage
+        item = target.inventory.get_item(item_name)  # <-- récupère l'objet Item
+        if not item:
+            print(f"{target.name} n'a pas pu vous donner '{item_name}'.")
+            return
+
+        # retirer l'objet du personnage
+        target.inventory.remove_item(item.name)
+        # ajouter l'objet réel à l'inventaire du joueur
+        game.player.inventory.add_item(item)
+        print(f"Vous avez reçu '{item.name}' de {target.name}.")
+
+        if item.name.lower() == "ce":
+            game.player.quest_manager.complete_objective("Avoir une CE dans l'inventaire")
+
+    @staticmethod
+    def read(game, words, _num_params):
+        if len(words) != 2:
+            print("Utilisation : read <objet>")
+            return
+
+        target = words[1].lower()
+        room = game.player.current_room
+
+        # 📖 lecture du livre dans la BU
+        if target == "livre" and hasattr(room, "book_text"):
+            print("\n" + room.book_text + "\n")
+            return
+
+        print("Il n'y a rien à lire ici.")
+
+
     def move(self, direction):
         """
         Déplace le joueur vers une salle voisine.
@@ -592,4 +667,121 @@ class Actions:
 
         # Show all rewards
         game.player.show_rewards()
+        return True
+
+    @staticmethod
+    def money(game, list_of_words, number_of_parameters):
+        if len(list_of_words) != 1:
+            print("Utilisation : money")
+            return False
+
+        game.player.show_money()
+        return True
+    
+
+    @staticmethod
+    @staticmethod
+    def buy(game, list_of_words, _):
+        room = game.player.current_room
+
+        if room.name.lower() != "magasin":
+            print("❌ Vous devez être au magasin pour acheter.")
+            return
+
+        item_name = list_of_words[1]
+        item = room.inventory.get_item(item_name)
+
+        if item is None:
+            print("❌ Cet objet n'est pas en vente.")
+            return
+
+        if game.player.money < item.price:
+            print("❌ Vous n'avez pas assez d'argent.")
+            return
+
+        # Achat
+        game.player.money -= item.price
+        room.inventory.remove_item(item_name)
+        game.player.inventory.add_item(item)
+
+        print(f"🛒 Vous achetez {item.name} pour {item.price}€.")
+
+        if item.name.lower() == "résistance":
+                game.player.quest_manager.complete_objective(
+                    "Avoir une résistance dans l'inventaire"
+                )
+
+
+    @staticmethod
+    def sell(game, list_of_words, _number_of_parameters):
+        player = game.player
+        room = player.current_room
+
+        if room.name.lower() != "magasin":
+            print("\nVous devez être dans le magasin pour vendre.\n")
+            return
+
+        item_name = list_of_words[1].lower()
+        item = player.inventory.get_item(item_name)
+
+        if not item:
+            print(f"\nVous ne possédez pas '{item_name}'.\n")
+            return
+
+        sell_price = item.price // 2
+
+        player.inventory.remove_item(item_name)
+        room.inventory.add_item(item)
+        player.money += sell_price
+
+        print(f"\n💰 Vous vendez '{item.name}' pour {sell_price}€.\n")
+
+        
+    def create(game, list_of_words, number_of_parameters):
+        """
+        Crée un 'gout' si le joueur est au Crous et possède l'ingrédient.
+        La commande doit être exactement : create gout
+        """
+
+        # Vérifier que le joueur a bien tapé 2 mots : create + gout
+        if len(list_of_words) != 2 or list_of_words[1].lower() != "gout":
+            print("❌ Commande invalide. Tapez : create gout")
+            return False
+
+        # Vérifier la salle
+        if game.player.current_room != game.rooms["Crous"]:
+            print("❌ Vous devez être au Crous pour créer un gout.")
+            return False
+
+        # Vérifier l'ingrédient
+        if not game.player.inventory.has_item("base"):
+            print("❌ Il vous faut un arôme pour créer un gout.")
+            return False
+        
+        if not game.player.inventory.has_item("cerise"):
+            print("❌ Il vous faut des cerises pour créer un gout.")
+            return False
+
+        # Empêcher doublon
+        if game.player.inventory.has_item("gout"):
+            print("❌ Vous avez déjà un gout.")
+            return False
+
+        # Consommer l'ingrédient
+        game.player.inventory.remove_item("base")
+        game.player.inventory.remove_item("cerise")
+
+
+        # Créer le gout
+        item = Item(
+            name="gout",
+            description="Un délicieux gout fait maison",
+            weight=0.3,
+            price=10
+        )
+        game.player.inventory.add_item(item)
+
+        print("🎉 Vous utilisez l'arôme et créez un gout !")
+        game.player.quest_manager.complete_objective("Créer un gout")
+
         return True

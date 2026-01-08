@@ -47,6 +47,8 @@ class Quest:
         self.is_completed = False
         self.is_active = False
         self.reward = reward
+        self.reward_given = False     # ← éviter doublons
+
 
 
     def activate(self):
@@ -97,11 +99,11 @@ class Quest:
         """
         if objective in self.objectives and objective not in self.completed_objectives:
             self.completed_objectives.append(objective)
-            print(f"✅ Objectif accompli: {objective}")
 
             # Check if all objectives are completed
             if len(self.completed_objectives) == len(self.objectives):
                 self.complete_quest(player)
+            print(f"✅ Objectif accompli: {objective}")
 
             return True
         return False
@@ -129,9 +131,7 @@ class Quest:
         """
         if not self.is_completed:
             self.is_completed = True
-            print(f"\n🏆 Quête terminée: {self.title}")
             if self.reward:
-                print(f"🎁 Récompense: {self.reward}")
                 if player:
                     player.add_reward(self.reward)
             print()
@@ -477,16 +477,30 @@ class QuestManager:
         """
         for quest in self.active_quests:
             if quest.complete_objective(objective_text):
-                if quest.is_completed:
-                    self.active_quests.remove(quest)
 
-                    reward = Item("cookie", "Un délicieux cookie 🍪", 0.2)
-                    self.player.inventory.add_item(reward)
-                    self.player.rewards.append("cookie")
+                if quest.is_completed and not quest.reward_given:
+                    quest.reward_given = True
 
-                    print("🎉 Quête terminée ! Vous recevez un cookie 🍪")
+                    print(f"\n🏆 Quête terminée: {quest.title}")
+
+                    reward = quest.reward
+
+                    # 💰 ARGENT
+                    if quest.title == "Mission Pablo":
+                        self.player.money += 10
+                        print("💰 Vous recevez 10€ de la part de Pablo.")
+
+                    # 🎁 OBJET
+                    elif reward["type"] == "item":
+                        item = Item(
+                            reward["name"],
+                            description=f"Récompense de la quête '{quest.title}'",
+                            weight=reward["weight"]
+                        )
+                        self.player.inventory.add_item(item)
+                        print(f"🎁 Vous recevez : {item.name}")
+
                 return True
-
         return False
 
 
