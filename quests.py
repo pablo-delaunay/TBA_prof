@@ -47,7 +47,7 @@ class Quest:
         self.is_completed = False
         self.is_active = False
         self.reward = reward
-        self.reward_given = False     # ← éviter doublons
+        self.reward_given = False     
 
 
 
@@ -485,12 +485,12 @@ class QuestManager:
 
                     reward = quest.reward
 
-                    # 💰 ARGENT
+                    # recevoir de l'argent
                     if quest.title == "Mission Pablo":
                         self.player.money += 10
                         print("💰 Vous recevez 10€ de la part de Pablo.")
 
-                    # 🎁 OBJET
+                    # recevoir un objet
                     elif reward["type"] == "item":
                         item = Item(
                             reward["name"],
@@ -500,7 +500,11 @@ class QuestManager:
                         self.player.inventory.add_item(item)
                         print(f"🎁 Vous recevez : {item.name}")
 
-                return True
+                    # fin du jeu
+                    elif reward and reward.get("type") == "finish_game":
+                        print("\n🎉 Félicitations ! Vous avez aidé Lisa à trouver sa cigarette électronique et terminé le jeu ! 🎉\n")
+                        if self.game:
+                            self.game.finished = True
         return False
 
 

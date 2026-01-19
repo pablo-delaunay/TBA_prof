@@ -31,6 +31,8 @@ class Room:
         self.inventory = Inventory()
         self.items = []
         self.characters = []
+        self.image = None  # Path to image file (PNG/JPG) for this room
+
 
     def get_exit(self, direction):
         """

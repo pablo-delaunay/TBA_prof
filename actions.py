@@ -36,7 +36,7 @@ class Actions:
                 # ⚠️ Avertissement Crackheads depuis le Chemin
         if player.current_room == game.rooms["Chemin"] and direction == "O":
             print("Titouan : Lisa il y a des crackheads là-bas c'est dangereux, tu es sûre d'y aller ?")
-            answer = input("(oui / non) > ").lower().strip()
+            answer = game.get_input("(oui / non) > ").lower().strip()
             if answer == "oui":
                 print("\nLisa est morte tuée.")
                 game.finished = True
@@ -69,17 +69,17 @@ class Actions:
         player.current_room = next_room
         player.history.append(next_room)
 
+        # Affichage de l'historique
+        hist = player.get_history()
+        if hist:
+            print(hist)
+
         # Affichage
         print(next_room.get_long_description())
         if getattr(next_room, "is_shop", False):
             print("\n🛒 Le magasin propose :")
             for item in next_room.inventory.items:
                 print(f" - {item.name} ({item.price}€)")
-
-
-        hist = player.get_history()
-        if hist:
-            print(hist)
 
         # Déplacement des personnages
         for char in game.characters:
@@ -160,11 +160,11 @@ class Actions:
         # Revenir à la salle précédente
         player.current_room = player.history[-1]
 
-        # Afficher la description et l'historique
-        print(player.current_room.get_long_description())
+        # Afficher l'historique et la description
         hist = player.get_history()
         if hist != "":
             print(hist)
+        print(player.current_room.get_long_description())
 
     @staticmethod
     def help(game, list_of_words, number_of_parameters):
@@ -411,9 +411,12 @@ class Actions:
 
         target.get_msg()
 
+        if target.name == "Pablo":
+            game.player.quest_manager.activate_quest("Mission Pablo")
+
         objective = f"Parler à {target.name}"
         game.player.quest_manager.complete_objective(objective)
-        print(char.inventory.get_inventory(f"{char.name} possède :"))
+        print(target.inventory.get_inventory(f"{target.name} possède :"))
 
     @staticmethod
     def quests(game, list_of_words, number_of_parameters):
@@ -552,13 +555,8 @@ class Actions:
         print(f"\nVous donnez '{item.name}' à {target.name}.\n")
         target.receive_item(item)
 
-        # Compléter la quête si elle existe
-        if player.quest_manager:
-            quest_title = f"Ramener le {item.name.lower()} à {target.name}"
-            completed = player.quest_manager.complete_objective(quest_title)
-            if completed:
-                print(f"🎉 Vous avez complété l'objectif '{quest_title}' !")
-
+        if item.name.lower() == "cookie" and target.name.lower() == "pablo":
+            game.player.quest_manager.complete_objective("Ramener le cookie à Pablo")
 
 
     @staticmethod
@@ -631,12 +629,13 @@ class Actions:
         # Mise à jour de la salle actuelle et de l'historique
         self.current_room = next_room
         self.history.append(self.current_room)
-        print(self.current_room.get_long_description())
 
         # Affichage de l'historique
         hist = self.get_history()
         if hist:
             print(hist)
+
+        print(self.current_room.get_long_description())
 
         # Incrément du compteur de déplacements
         self.status.move_count += 1
@@ -712,6 +711,7 @@ class Actions:
                 )
 
 
+
     @staticmethod
     def sell(game, list_of_words, _number_of_parameters):
         player = game.player
@@ -755,11 +755,11 @@ class Actions:
 
         # Vérifier l'ingrédient
         if not game.player.inventory.has_item("base"):
-            print("❌ Il vous faut un arôme pour créer un gout.")
+            print("❌ Il vous faut une base et des cerises pour créer un gout.")
             return False
         
         if not game.player.inventory.has_item("cerise"):
-            print("❌ Il vous faut des cerises pour créer un gout.")
+            print("❌ Il vous faut une cerise et une base pour créer un gout.")
             return False
 
         # Empêcher doublon
@@ -776,12 +776,16 @@ class Actions:
         item = Item(
             name="gout",
             description="Un délicieux gout fait maison",
-            weight=0.3,
-            price=10
+            weight=0.005,
+            price=0
         )
+
         game.player.inventory.add_item(item)
 
-        print("🎉 Vous utilisez l'arôme et créez un gout !")
+        # Objectifs de quête
+        game.player.quest_manager.complete_objective("Créer un gout")
+        game.player.quest_manager.complete_objective("Avoir un gout dans l'inventaire")
+
         game.player.quest_manager.complete_objective("Créer un gout")
 
         return True
