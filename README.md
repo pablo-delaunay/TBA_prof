@@ -13,4 +13,6 @@ Il y a pour le moment 5 modules contenant chacun une classe.
 - `room.py` / `Room` : propriétés génériques d'un lieu  ;
 - `player.py` / `Player` : le joueur ;
 - `command.py` / `Command` : les consignes données par le joueur ;
-- `actions.py` / `Action` : les interactions entre .
+- `actions.py` / `Action` : les interactions entre
+ .
+[video_presentation(1).zip](https://github.com/user-attachments/files/24840499/video_presentation.1.zip)
