@@ -21,9 +21,7 @@ class Item:
 
     def __str__(self):
         return f"{self.name} : {self.description} ({self.weight} kg)"
-        if self.price > 0:
-            return f"{self.name} ({self.price}€)"
-        return self.name
+
 
     def get_weight(self):
         """Retourne le poids de l'objet."""
@@ -108,7 +106,7 @@ class Inventory:
         for item in self.items:
             inv += f" - {item}\n"
         return inv
-    
+
     def get_item(self, item_name):
         """
         Retourne un objet sans le retirer de l'inventaire.
